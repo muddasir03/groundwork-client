@@ -72,7 +72,7 @@ export default function DesignSystemPage() {
 
         <Section title="Typography">
           <div className="space-y-3">
-            <p className="font-display text-4xl font-bold tracking-tight">Page title · display font</p>
+            <p className="font-display text-4xl font-extrabold tracking-tight">Page title · display font</p>
             <p className="text-xl font-semibold">Section title</p>
             <p className="text-base text-ink">Body text in IBM Plex Sans, for reports and descriptions.</p>
             <p className="text-sm text-ink-muted">Secondary text</p>
@@ -111,7 +111,7 @@ export default function DesignSystemPage() {
                 <FitScoreRing score={82} band="strong" />
                 <div>
                   <p className="text-xs text-ink-subtle">Your fit</p>
-                  <p className="font-display text-2xl font-bold text-success">Strong fit</p>
+                  <p className="font-display text-2xl font-extrabold text-success">Strong fit</p>
                 </div>
               </div>
               <ScoreBreakdown className="mt-4" band="strong" items={sampleBreakdown} />
@@ -124,7 +124,7 @@ export default function DesignSystemPage() {
             <Card highlight="possible">
               <div className="flex items-center gap-4">
                 <FitScoreRing score={64} band="possible" size="lg" />
-                <p className="font-display text-2xl font-bold text-warning">Possible fit</p>
+                <p className="font-display text-2xl font-extrabold text-warning">Possible fit</p>
               </div>
               <ScoreBreakdown className="mt-4" band="possible" showBars items={sampleBreakdown.slice(0, 3)} />
             </Card>

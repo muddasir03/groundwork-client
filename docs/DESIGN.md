@@ -57,14 +57,15 @@ Fonts load through `next/font` in `app/layout.tsx` (self-hosted, no requests to 
 
 | Style | Classes | Use |
 |---|---|---|
-| Page title | `font-display text-3xl md:text-4xl font-bold tracking-tight` (via `PageHeader`) | One per page |
-| Hero title | `font-display text-4xl md:text-5xl font-bold tracking-tight` | Landing page only |
+| Page title | `font-display text-3xl md:text-4xl font-extrabold tracking-tight` (via `PageHeader`) | One per page |
+| Hero title | `font-display text-4xl md:text-5xl font-extrabold tracking-tight` | Landing page only |
 | Section title | `text-xl font-semibold` (via `SectionTitle`) | Card headings |
 | Body | `text-base` (reports) / `text-sm` (cards, tables) | |
 | Eyebrow | `text-xs font-semibold uppercase tracking-wide` | "MATCHES", "WHY YOU MATCH" |
 | Meta | `text-xs text-ink-subtle` | Dates, source counts |
 
-- **Display font:** Bricolage Grotesque, for page titles, the logo and big fit labels.
+- **Display font:** Plus Jakarta Sans, extra-bold (`font-display font-extrabold`), for page titles,
+  the logo and big fit labels.
 - **Body font:** IBM Plex Sans, for everything else.
 
 ## Shape and spacing

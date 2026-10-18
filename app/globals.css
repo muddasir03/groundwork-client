@@ -46,7 +46,7 @@
 
 @theme inline {
   --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-bricolage), var(--font-plex-sans), ui-sans-serif, sans-serif;
+  --font-display: var(--font-jakarta), var(--font-plex-sans), ui-sans-serif, sans-serif;
 }
 
 @layer base {

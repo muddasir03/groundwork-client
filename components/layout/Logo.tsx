@@ -13,7 +13,7 @@ export function Logo({ href = "/", onDark = false }: { href?: string; onDark?: b
           <path d="M3 4h7M3 8h10M3 12h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
       </span>
-      <span className={cn("font-display text-lg font-bold", onDark ? "text-white" : "text-ink")}>Groundwork</span>
+      <span className={cn("font-display text-lg font-extrabold", onDark ? "text-white" : "text-ink")}>Groundwork</span>
     </Link>
   );
 }

@@ -2,6 +2,7 @@ import { Suspense, type ReactNode } from "react";
 import { AppNav } from "@/components/layout/AppNav";
 import { Logo } from "@/components/layout/Logo";
 import { NavLinks } from "@/components/layout/NavLinks";
+import { SampleDataBanner } from "@/components/layout/SampleDataBanner";
 
 /**
  * Frame for the signed-in product: a top bar with the logo and sections on desktop, and a bottom
@@ -21,6 +22,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
+      <SampleDataBanner />
       <main className="flex-1 pb-24 md:pb-12">{children}</main>
 
       <nav aria-label="Main" className="fixed inset-x-0 bottom-0 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">

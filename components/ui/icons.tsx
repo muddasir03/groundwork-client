@@ -55,3 +55,13 @@ export function UserIcon(props: IconProps) {
     </Icon>
   );
 }
+
+export function DocumentIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M14 3H6v18h12V7z" />
+      <path d="M14 3v4h4" />
+      <path d="m9 14 2 2 4-4" />
+    </Icon>
+  );
+}

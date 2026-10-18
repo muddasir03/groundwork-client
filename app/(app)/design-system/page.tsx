@@ -5,6 +5,12 @@ import { Badge, Tag } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, Inset } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
+import { Disclosure } from "@/components/ui/Disclosure";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { FactValue } from "@/components/ui/FactValue";
+import { StatTile } from "@/components/ui/StatTile";
+import { Table, TableFrame, Td, Th } from "@/components/ui/Table";
+import { Tabs } from "@/components/ui/Tabs";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { SelectField, TextField } from "@/components/ui/Field";
 import { FitBadge } from "@/components/ui/FitBadge";
@@ -97,9 +103,15 @@ export default function DesignSystemPage() {
             </Button>
             <Button size="lg">Large</Button>
             <Button disabled>Disabled</Button>
+            <Button variant="secondary" pressed>
+              Pressed (toggle on)
+            </Button>
           </div>
           <div className="mt-4 rounded-2xl bg-ink p-5">
-            <Button variant="inverse">Inverse, on a dark panel</Button>
+            <Eyebrow tone="onDark">Eyebrow on dark</Eyebrow>
+            <Button variant="inverse" className="mt-3">
+              Inverse, on a dark panel
+            </Button>
           </div>
         </Section>
 
@@ -154,6 +166,73 @@ export default function DesignSystemPage() {
             <Chip selected>Spain</Chip>
             <Chip>Netherlands</Chip>
             <Chip variant="add">+ Add country</Chip>
+          </div>
+        </Section>
+
+        <Section title="Facts and stats">
+          <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <StatTile definition label="Founded">
+              <FactValue fact={{ label: "Founded", value: "2018", status: "verified", sourceIds: [] }} />
+            </StatTile>
+            <StatTile definition label="Pay">
+              <FactValue fact={{ label: "Pay", value: null, status: "not_public", sourceIds: [] }} />
+            </StatTile>
+            <StatTile definition label="Relocation support">
+              <FactValue fact={{ label: "Relocation support", value: null, status: "unconfirmed", sourceIds: [] }} />
+            </StatTile>
+          </dl>
+          <dl className="mt-4 grid gap-4 md:grid-cols-2">
+            <StatTile variant="card" definition label="Published">
+              6 <span className="text-base font-semibold text-ink-subtle">of 9</span>
+            </StatTile>
+            <StatTile variant="card" definition label="Waiting for review">
+              1
+            </StatTile>
+          </dl>
+        </Section>
+
+        <Section title="Tabs, disclosure and tables">
+          <Tabs
+            label="Example tabs"
+            items={[
+              { id: "report", label: "Report", content: <p className="pt-4 text-sm">Report panel</p> },
+              { id: "fit", label: "Your fit", content: <p className="pt-4 text-sm">Fit panel</p> },
+              { id: "people", label: "People", content: <p className="pt-4 text-sm">People panel</p> },
+            ]}
+          />
+          <div className="mt-6">
+            <Disclosure title="Clients and competitors">
+              <p className="text-sm">Collapsed into a row on mobile, always open from md up.</p>
+            </Disclosure>
+          </div>
+          <TableFrame className="mt-6">
+            <Table>
+              <thead>
+                <tr>
+                  <Th>Company</Th>
+                  <Th>Status</Th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <Td>Example Analytics</Td>
+                  <Td>
+                    <Badge tone="success">Published</Badge>
+                  </Td>
+                </tr>
+                <tr>
+                  <Td last>Sample Labs</Td>
+                  <Td last>
+                    <Badge tone="warning">In review</Badge>
+                  </Td>
+                </tr>
+              </tbody>
+            </Table>
+          </TableFrame>
+          <div className="mt-6">
+            <EmptyState title="Your shortlist is empty" action={<Button>Find companies</Button>}>
+              Empty lists say what is missing and offer the next step.
+            </EmptyState>
           </div>
         </Section>
 

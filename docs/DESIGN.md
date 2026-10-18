@@ -17,9 +17,12 @@ product brief (section 8) and the MVP screen designs.
 3. **Colours come only from tokens.** Tailwind's default palette is switched off, so classes like
    `bg-blue-600` don't exist, and ESLint rejects raw hex values like `bg-[#1e40c0]`. If a colour is
    truly missing, add a token to `globals.css` and to the table below.
-4. **Same meaning, same look.** A fit band, a status or a primary action always looks the same,
+4. **Never override a component's built-in classes with a conflicting one** (e.g. `size="sm"` plus
+   `className="min-h-11"`). When two Tailwind utilities set the same property, the winner depends on
+   CSS order, not class order. Pick the right variant or size, or add one to the component.
+5. **Same meaning, same look.** A fit band, a status or a primary action always looks the same,
    on every screen.
-5. **Light theme only.** The brief specifies a light background; there is no dark mode.
+6. **Light theme only.** The brief specifies a light background; there is no dark mode.
 
 ## Colour tokens
 
@@ -80,16 +83,22 @@ Fonts load through `next/font` in `app/layout.tsx` (self-hosted, no requests to 
 
 | Component | File | Use |
 |---|---|---|
-| `Button`, `ButtonLink` | `ui/Button.tsx` | `primary` main action (one per area), `secondary`, `dark` (e.g. "Compare selected"), `inverse` on dark panels |
+| `Button`, `ButtonLink` | `ui/Button.tsx` | `primary` main action (one per area), `secondary`, `dark` (e.g. "Compare selected"), `inverse` on dark panels; `pressed` makes a toggle (Save, Compare, Correct/Wrong) |
 | `Card`, `Inset` | `ui/Card.tsx` | Every content block; `highlight` for the fit card (band colour) or the item needing attention (`primary`) |
 | `Badge`, `Tag` | `ui/Badge.tsx` | Statuses (see table above); `Tag` for facts and technologies (`highlighted` = also on the user's profile) |
-| `Eyebrow` | `ui/Eyebrow.tsx` | Small uppercase label above a title or list; `success` for matches, `warning` for gaps |
+| `Eyebrow` | `ui/Eyebrow.tsx` | Small uppercase label above a title or list; `success` for matches, `warning` for gaps, `onDark` on ink panels |
 | `Chip` | `ui/Chip.tsx` | Selectable pills: countries, sectors, quick filters, shortlist stages |
 | `FitBadge` | `ui/FitBadge.tsx` | Fit as a pill: `full` "Strong fit · 82", `short` "Strong · 82" (tables), `score` "82" (mobile) |
 | `FitScoreRing` | `ui/FitScoreRing.tsx` | The signature fit visual on the company page |
 | `ScoreBreakdown` | `ui/ScoreBreakdown.tsx` | How the score is made up; `showBars` on mobile |
 | `FitReasons` | `ui/FitReasons.tsx` | Matches and gaps. **Required wherever a fit score is shown in detail** |
 | `ResearchMeta` | `ui/ResearchMeta.tsx` | "Researched 30 Sep 2026 · 18 sources". **Required wherever research is shown** |
+| `FactValue`, `Citations` | `ui/FactValue.tsx` | A fact's value or **exactly** "Unconfirmed" / "Not public"; numbered source links to `#source-<id>` |
+| `StatTile` | `ui/StatTile.tsx` | Labelled value: `inset` inside cards ("Founded 2018"), `card` on the canvas (admin stats); `definition` inside a `<dl>` |
+| `Tabs` | `ui/Tabs.tsx` | Accessible tabs; `mode="mobile"` shows every panel from `md` up (company page) |
+| `Disclosure` | `ui/Disclosure.tsx` | Report section collapsed into a row on mobile, open from `md` up |
+| `Table`, `TableFrame`, `Th`, `Td` | `ui/Table.tsx` | Tables (shortlist, compare, admin); `Th scope="row"` for row labels, `Td last` on the final row |
+| `EmptyState` | `ui/EmptyState.tsx` | Empty lists: what's missing and the next step |
 | `CompanyMark`, `Avatar` | `ui/Identity.tsx` | Company letter tile; person initials (`soft`) or the signed-in user (`ink`) |
 | `TextField`, `SelectField` | `ui/Field.tsx` | Labelled inputs and filter dropdowns |
 | icons | `ui/icons.tsx` | Small inline icon set; always paired with text or an `aria-label` |
@@ -97,6 +106,11 @@ Fonts load through `next/font` in `app/layout.tsx` (self-hosted, no requests to 
 | `PublicShell` | `layout/PublicShell.tsx` | Public frame (landing, log in, sample report): header with "Get started", footer with the privacy line. Call-to-action targets live in `publicLinks` |
 | `Container`, `PageHeader`, `SectionTitle` | `layout/Page.tsx` | Page width, page title block, card headings |
 | `Logo` | `layout/Logo.tsx` | Mark and wordmark; `onDark` for the admin header |
+| `AdminShell` | `layout/AdminShell.tsx` | Admin frame: dark header, "Admin" label, admin nav |
+| `SampleDataBanner` | `layout/SampleDataBanner.tsx` | "Preview with sample data" bar on product and admin pages; remove when screens use the real API |
+
+Product components shared by several screens live in `components/company/` (company card, report,
+fit card, people, approach, actions). Status labels and badge tones come from `lib/status.ts`.
 
 Formatting helpers: `formatResearchDate` and `pluralize` in `lib/format.ts`. Always use
 `formatResearchDate` for dates so every date reads "30 Sep 2026".

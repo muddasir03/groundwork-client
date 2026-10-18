@@ -1,38 +1,36 @@
+import { companyPath } from "@/components/company/paths";
 import { Card } from "@/components/ui/Card";
 import { FitBadge } from "@/components/ui/FitBadge";
 import { FitReasons } from "@/components/ui/FitReasons";
 import { CompanyMark } from "@/components/ui/Identity";
 import { ResearchMeta } from "@/components/ui/ResearchMeta";
+import type { Company } from "@/lib/api/types";
+import Link from "next/link";
 
-// A fictional company: the landing page must not make claims about real companies (product brief:
-// "Never invent facts"). Replace with a real, reviewed report once one is published.
-const sample = {
-  name: "Brisa People",
-  summary: "HR and payroll platform · Valencia",
-  band: "strong" as const,
-  score: 82,
-  matches: ["Their stack is Ruby on Rails and React, your core stack", "They hire product engineers on skills, not years"],
-  gaps: ["Engineering is office-first; relocation to Spain needed", "Roadmap is AI-first; no LLM projects on your profile"],
-  researchedAt: "2026-09-30",
-  sourceCount: 18,
-  contactCount: 5,
-};
-
-/** The landing page's preview of a fit verdict. */
-export function SampleFitCard() {
+/**
+ * The landing page's preview of a fit verdict, taken from the fictional sample report so the
+ * numbers match the report it links to. The brief rules out claims about real companies here.
+ */
+export function SampleFitCard({ company }: { company: Company }) {
   return (
     <Card padding="lg" className="shadow-lg shadow-ink/5">
       <div className="flex items-start gap-3">
-        <CompanyMark name={sample.name} />
+        <CompanyMark name={company.name} />
         <div className="min-w-0 flex-1">
-          <p className="font-semibold text-ink">{sample.name}</p>
-          <p className="text-xs text-ink-subtle">{sample.summary}</p>
+          <p className="font-semibold text-ink">
+            <Link href={companyPath(company.slug)} className="hover:underline">
+              {company.name}
+            </Link>
+          </p>
+          <p className="text-xs text-ink-subtle">
+            {company.description.replace(/\.$/, "")} · {company.city}
+          </p>
         </div>
-        <FitBadge band={sample.band} score={sample.score} />
+        <FitBadge band={company.fit.band} score={company.fit.score} />
       </div>
-      <FitReasons className="mt-5" matches={sample.matches} gaps={sample.gaps} matchesLabel="Why you match" gapsLabel="Gaps to plan for" />
+      <FitReasons className="mt-5" matches={company.fit.matches} gaps={company.fit.gaps} matchesLabel="Why you match" gapsLabel="Gaps to plan for" />
       <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-4">
-        <ResearchMeta researchedAt={sample.researchedAt} sourceCount={sample.sourceCount} contactCount={sample.contactCount} />
+        <ResearchMeta researchedAt={company.researchedAt} sourceCount={company.sourceCount} contactCount={company.people.length} />
         <span className="text-xs text-ink-subtle">Fictional example</span>
       </div>
     </Card>

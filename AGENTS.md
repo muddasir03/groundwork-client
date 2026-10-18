@@ -23,9 +23,10 @@ reports, a personal fit verdict, and the right people to contact. It talks to
 - **Read the product brief before designing any feature:**
   [groundwork-api/docs/PRODUCT.md](https://github.com/muddasir03/groundwork-api/blob/develop/docs/PRODUCT.md)
   (locally `../groundwork-api/docs/PRODUCT.md`). Its design, tone and accessibility sections apply here.
-- **Status:** the design system (tokens, components, `/design-system`), the app shells and the
-  landing page exist. No product screens (search, company, compare, shortlist, profile, admin) are
-  built yet. Never describe features as built when they aren't.
+- **Status:** every MVP screen is built (landing, search, company, compare, shortlist, profile,
+  admin companies) on **fictional sample data**. Nothing is connected to groundwork-api yet: no
+  accounts, no saving beyond the browser, no CV upload, no research or approach generation, and
+  the admin actions are disabled. Never describe features as built when they aren't.
 - **Read [docs/DESIGN.md](docs/DESIGN.md) before building any UI.** It is the design system every
   screen must follow.
 - **Stack:** Next.js 16 (App Router, Turbopack), React 19, TypeScript (strict), Tailwind CSS 4.
@@ -78,9 +79,17 @@ data-fetching, caching or routing code.
 - `app/(public)/` — public pages (landing, later log in and the sample report), wrapped in
   `PublicShell`. `app/(app)/` — the signed-in product, wrapped in `AppShell`. `app/(app)/design-system/` is the
   living reference of every token and component.
-- `lib/api/` — **the only place that calls the API.** It reads `process.env.NEXT_PUBLIC_API_URL` and
-  exports typed functions; response types live in `lib/api/types.ts`. Pages and components never
-  `fetch` the API directly.
+- `lib/api/` — **the only place screens get data from.** `index.ts` exports typed async functions,
+  `types.ts` is the data contract the Rails API must match, and `sampleData.ts` holds the fictional
+  sample data those functions return until each endpoint exists. To connect an endpoint, change the
+  function in `index.ts` to call `process.env.NEXT_PUBLIC_API_URL`; screens don't change. Pages and
+  components never `fetch` the API directly.
+- `lib/store/` — per-browser state (compare selection, shortlist) in localStorage, read through
+  `useSyncExternalStore`. Temporary until accounts exist in the API.
+- `components/company/` — product components shared by several screens (company card, report, fit
+  card, people, approach). Route-only views live next to their page (e.g. `search/SearchView.tsx`).
+- **Sample data is fictional only:** invented companies and people, sources on `example.com`. Never
+  add real companies or people. `lib/api/sampleData.test.ts` enforces the product rules on it.
 - Import with the `@/` alias (`@/components/ui/Button`), not long relative paths.
 
 ### React and TypeScript
@@ -118,8 +127,11 @@ data-fetching, caching or routing code.
 - Tests use **Vitest** and **Testing Library** (`*.test.ts(x)` next to the code). Every component
   in `components/ui/` and every helper in `lib/` has tests. Query by role and accessible name, the
   way a user or screen reader finds things, not by class names (except to check token colours).
-- Vitest can't render `async` Server Components; test those through their child components, or
-  later with end-to-end tests (Playwright, not set up yet; ask first).
+- Pages are thin async Server Components that load data and render a view component; test the
+  view. An async page that only awaits data can be tested with `render(await Page())`. Server
+  Components that pass props to Client Components must pass plain data, not functions.
+- With `cacheComponents` on, a dynamic route (e.g. `companies/[slug]`) needs a `loading.tsx` (or a
+  `<Suspense>`) around its `params` access, or Next.js flags it during `next dev`.
 
 ## Environments and deployment
 

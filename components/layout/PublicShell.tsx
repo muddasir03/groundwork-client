@@ -33,9 +33,7 @@ export function PublicHeader() {
           >
             Log in
           </Link>
-          <ButtonLink href={publicLinks.getStarted} size="sm" className="min-h-11">
-            Get started
-          </ButtonLink>
+          <ButtonLink href={publicLinks.getStarted}>Get started</ButtonLink>
         </nav>
       </Container>
     </header>

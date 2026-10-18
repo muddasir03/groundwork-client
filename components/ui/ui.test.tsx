@@ -5,10 +5,14 @@ import { Badge } from "@/components/ui/Badge";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
+import { Disclosure } from "@/components/ui/Disclosure";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { FactValue } from "@/components/ui/FactValue";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { SelectField, TextField } from "@/components/ui/Field";
 import { Avatar, CompanyMark } from "@/components/ui/Identity";
 import { ResearchMeta } from "@/components/ui/ResearchMeta";
+import { StatTile } from "@/components/ui/StatTile";
 
 describe("Button", () => {
   it("defaults to type=button so it never submits a form by accident", () => {
@@ -104,5 +108,68 @@ describe("Eyebrow", () => {
   it("uses the tone colour", () => {
     render(<Eyebrow tone="warning">Gaps to plan for</Eyebrow>);
     expect(screen.getByText("Gaps to plan for")).toHaveClass("uppercase", "text-warning");
+  });
+});
+
+describe("Button pressed state", () => {
+  it("is a toggle with the cobalt on-style replacing the variant colours", () => {
+    render(
+      <Button variant="secondary" pressed>
+        Save
+      </Button>,
+    );
+    const button = screen.getByRole("button", { name: "Save", pressed: true });
+    expect(button).toHaveClass("bg-primary-soft", "text-primary");
+    expect(button).not.toHaveClass("bg-surface");
+  });
+});
+
+describe("StatTile", () => {
+  it("renders a term and definition inside a definition list", () => {
+    render(
+      <dl>
+        <StatTile label="Founded" definition>
+          2018
+        </StatTile>
+      </dl>,
+    );
+    expect(screen.getByRole("term")).toHaveTextContent("Founded");
+    expect(screen.getByRole("definition")).toHaveTextContent("2018");
+  });
+});
+
+describe("FactValue", () => {
+  it("shows verified values, and the exact words for unknowns", () => {
+    render(
+      <>
+        <FactValue fact={{ label: "Founded", value: "2018", status: "verified", sourceIds: [] }} />
+        <FactValue fact={{ label: "Pay", value: null, status: "not_public", sourceIds: [] }} />
+        <FactValue fact={{ label: "Customers", value: null, status: "unconfirmed", sourceIds: [] }} />
+      </>,
+    );
+    expect(screen.getByText("2018")).toBeInTheDocument();
+    expect(screen.getByText("Not public")).toBeInTheDocument();
+    expect(screen.getByText("Unconfirmed")).toBeInTheDocument();
+  });
+});
+
+describe("Disclosure", () => {
+  it("expands on mobile and is always open from md up", async () => {
+    render(<Disclosure title="Clients">Mostly small businesses.</Disclosure>);
+    const toggle = screen.getByRole("button", { name: "Clients" });
+    const content = screen.getByText("Mostly small businesses.");
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(content).toHaveClass("hidden", "md:block");
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(content).toHaveClass("block");
+  });
+});
+
+describe("EmptyState", () => {
+  it("says what is missing and offers the next step", () => {
+    render(<EmptyState title="Nothing here" action={<ButtonLink href="/search">Find companies</ButtonLink>} />);
+    expect(screen.getByText("Nothing here")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Find companies" })).toBeInTheDocument();
   });
 });

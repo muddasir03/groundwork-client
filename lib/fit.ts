@@ -1,6 +1,9 @@
 /** The three fit bands from the product brief. Every fit display maps from this. */
 export type FitBand = "strong" | "possible" | "weak";
 
+/** One part of a fit score, e.g. Technical stack 36 / 40. */
+export type ScoreItem = { label: string; value: number; max: number };
+
 export const fitBandLabel: Record<FitBand, string> = {
   strong: "Strong",
   possible: "Possible",

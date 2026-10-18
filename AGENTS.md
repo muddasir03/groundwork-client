@@ -65,7 +65,8 @@ npm run build
 This config differs from older Next.js defaults; check `node_modules/next/dist/docs/` before writing
 data-fetching, caching or routing code.
 - `cacheComponents: true` and `partialPrefetching: true` are on (`next.config.ts`).
-- `experimental.agentFeedback: true` is on, so `next dev` maintains a feedback block in this file.
+- `experimental.agentFeedback` is off on purpose: it made `next dev` rewrite this file and asked
+  agents to send feedback to the Next.js team.
 - Tailwind runs through the Turbopack CSS loader configured in `next.config.ts`.
 
 ## Code conventions

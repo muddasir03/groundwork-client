@@ -66,6 +66,7 @@ Fonts load through `next/font` in `app/layout.tsx` (self-hosted, no requests to 
 | Body | `text-base` (reports) / `text-sm` (cards, tables) | |
 | Eyebrow | `Eyebrow` component | "RESEARCH FIRST. APPLY SECOND.", "WHY YOU MATCH" |
 | Meta | `text-xs text-ink-subtle` | Dates, source counts |
+| Navigation | `text-base font-semibold` (top bar), `text-xs font-semibold` (mobile tab bar) | Normal case, not all caps: easier to scan |
 
 - **Display font:** Plus Jakarta Sans, extra-bold (`font-display font-extrabold`), for page titles,
   the logo and big fit labels.

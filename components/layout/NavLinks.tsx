@@ -52,15 +52,15 @@ export function NavLinks({ activeHref, layout, items = appNavItems, onDark = fal
               className={cn(
                 layout === "top" &&
                   cn(
-                    "inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-medium",
+                    "inline-flex min-h-11 items-center rounded-lg px-3.5 text-base font-semibold",
                     onDark
-                      ? active ? "bg-white font-semibold text-ink" : "text-line hover:text-white"
-                      : active ? "bg-primary-soft font-semibold text-primary" : "text-ink-muted hover:text-ink",
+                      ? active ? "bg-white text-ink" : "text-line hover:text-white"
+                      : active ? "bg-primary-soft text-primary" : "text-ink-muted hover:text-ink",
                   ),
                 layout === "bottom" &&
                   cn(
-                    "flex min-h-14 flex-col items-center justify-center gap-1 text-xs",
-                    active ? "font-semibold text-primary" : "text-ink-subtle",
+                    "flex min-h-14 flex-col items-center justify-center gap-1 text-xs font-semibold",
+                    active ? "text-primary" : "text-ink-subtle",
                   ),
               )}
             >

@@ -23,8 +23,11 @@ reports, a personal fit verdict, and the right people to contact. It talks to
 - **Read the product brief before designing any feature:**
   [groundwork-api/docs/PRODUCT.md](https://github.com/muddasir03/groundwork-api/blob/develop/docs/PRODUCT.md)
   (locally `../groundwork-api/docs/PRODUCT.md`). Its design, tone and accessibility sections apply here.
-- **Status:** foundation only. The home page is still the create-next-app template; no product
-  screens exist yet. Never describe features as built when they aren't.
+- **Status:** design foundation only. The design system (tokens, components, `/design-system`) and
+  the app shell exist; the home page is a placeholder and no product screens are built yet. Never
+  describe features as built when they aren't.
+- **Read [docs/DESIGN.md](docs/DESIGN.md) before building any UI.** It is the design system every
+  screen must follow.
 - **Stack:** Next.js 16 (App Router, Turbopack), React 19, TypeScript (strict), Tailwind CSS 4.
 
 ## Commands
@@ -35,11 +38,12 @@ npm install
 cp .env.example .env.local   # first time only
 npm run dev          # http://localhost:3000; needs the API on :3001 (bin/dev in groundwork-api)
 npm run lint
+npm test             # Vitest, once (npm run test:watch while developing)
 npm run build
 ```
 
-**Before opening a PR**, run `npm run lint` and `npm run build`. CI runs both (check `build`) and
-it must pass to merge.
+**Before opening a PR**, run `npm run lint`, `npm test` and `npm run build`. CI runs all three
+(check `build`) and it must pass to merge.
 
 ## Git workflow
 
@@ -68,8 +72,11 @@ data-fetching, caching or routing code.
 ### Structure
 - `app/` — routes (App Router). Group the signed-in product under a route group such as `app/(app)/`
   and the internal admin area under `app/admin/`.
-- `components/` — shared components; `components/ui/` for primitives (Button, Card, Badge, FitScore).
-  Components used by only one route live next to that route.
+- `components/ui/` — the design system's components; `components/layout/` — the app shell, page
+  container and headers. See [docs/DESIGN.md](docs/DESIGN.md). Components used by only one route
+  live next to that route.
+- `app/(app)/` — the signed-in product, wrapped in `AppShell`. `app/(app)/design-system/` is the
+  living reference of every token and component.
 - `lib/api/` — **the only place that calls the API.** It reads `process.env.NEXT_PUBLIC_API_URL` and
   exports typed functions; response types live in `lib/api/types.ts`. Pages and components never
   `fetch` the API directly.
@@ -82,13 +89,20 @@ data-fetching, caching or routing code.
 - Handle loading, empty and error states for everything that loads data.
 - Names: components `PascalCase.tsx`, everything else `camelCase.ts`; route folders in `kebab-case`.
 
-### Styling and design (from the product brief)
-- Tailwind utility classes only. Design tokens (colours, radii, spacing) live in `app/globals.css`
-  under `@theme`; components use the tokens, never raw hex values.
-- Look: clean white cards on a light background, a cobalt accent. Fit bands are always
-  **strong = green, possible = amber, weak = grey**. The fit score is the signature visual element.
-- Responsive and mobile-first. On mobile, a company page has three tabs: **Report**, **Your fit**,
-  **People**.
+### Styling and design
+**[docs/DESIGN.md](docs/DESIGN.md) is the rulebook for all UI.** In short:
+- Build screens from `components/ui/` and `components/layout/`. A new UI pattern goes into
+  `components/ui/` with a test, a demo on `/design-system` and a row in DESIGN.md, in the same PR.
+  Never style a one-off version inside a page.
+- Colours come only from the tokens in `app/globals.css`. Tailwind's default palette is removed,
+  and ESLint blocks raw hex values. Light theme only.
+- Fit bands are always **strong = green, possible = amber, weak = grey** (`FitBadge`,
+  `FitScoreRing`). Status badges follow the tone table in DESIGN.md.
+- Dates always go through `formatResearchDate` ("30 Sep 2026").
+- Responsive and mobile-first: top nav on desktop, bottom tab bar on mobile. On mobile, a company
+  page has three tabs: **Report**, **Your fit**, **People**.
+- With `cacheComponents` on, anything calling `usePathname`/`useSearchParams` in a shared layout must
+  sit inside `<Suspense>` with a server-rendered fallback (see `AppShell`).
 - Accessibility is required: semantic HTML, labelled form fields, visible focus states, full keyboard
   use, WCAG AA contrast, touch targets of at least 44×44 px.
 
@@ -100,8 +114,11 @@ data-fetching, caching or routing code.
 
 ### Dependencies and tests
 - **Ask the owner before adding a dependency**, and say why in the PR.
-- No test runner is set up yet. Ask before adding one (the likely choice is Vitest with Testing
-  Library for components, and Playwright for end-to-end tests).
+- Tests use **Vitest** and **Testing Library** (`*.test.ts(x)` next to the code). Every component
+  in `components/ui/` and every helper in `lib/` has tests. Query by role and accessible name, the
+  way a user or screen reader finds things, not by class names (except to check token colours).
+- Vitest can't render `async` Server Components; test those through their child components, or
+  later with end-to-end tests (Playwright, not set up yet; ask first).
 
 ## Environments and deployment
 

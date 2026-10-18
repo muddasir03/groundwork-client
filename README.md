@@ -64,7 +64,10 @@ Requires Node 24 (see `.nvmrc`; run `nvm use`).
 npm install
 cp .env.example .env.local   # points at the API on http://localhost:3001
 npm run dev                  # http://localhost:3000
+npm test                     # component tests (Vitest)
 ```
+
+The UI follows the design system in [docs/DESIGN.md](docs/DESIGN.md); every component is shown at `/design-system`.
 
 Run the API alongside it with `bin/dev` in `groundwork-api`.
 

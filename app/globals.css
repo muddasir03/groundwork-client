@@ -1,26 +1,62 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * Groundwork design tokens. The single source of truth for colour and type;
+ * see docs/DESIGN.md for what each token is for.
+ *
+ * Tailwind's default colour palette is removed (`--color-*: initial`), so only
+ * these tokens exist as utilities (bg-primary, text-ink-muted, ...). Raw hex
+ * values in class names are blocked by ESLint.
+ */
+@theme {
+  --color-*: initial;
+
+  --color-white: #ffffff;
+
+  /* Surfaces */
+  --color-canvas: #f3f4f6;
+  --color-surface: #ffffff;
+  --color-fill: #f3f4f6;
+
+  /* Lines */
+  --color-line: #e5e7eb;
+  --color-line-strong: #d1d5db;
+
+  /* Text */
+  --color-ink: #111827;
+  --color-ink-muted: #4b5563;
+  --color-ink-subtle: #5b6472;
+
+  /* Brand: cobalt */
+  --color-primary: #1e40c0;
+  --color-primary-hover: #1a37a3;
+  --color-primary-soft: #e8eefc;
+
+  /* Status: strong fit, published, interviewing */
+  --color-success: #0f6b45;
+  --color-success-soft: #e3f5ec;
+
+  /* Status: possible fit, in review, applied */
+  --color-warning: #92400e;
+  --color-warning-soft: #fdefd9;
+
+  /* Status: weak fit, draft, researching (shortlist) */
+  --color-neutral-soft: #e5e7eb;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), var(--font-plex-sans), ui-sans-serif, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 }

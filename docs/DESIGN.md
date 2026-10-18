@@ -61,7 +61,7 @@ Fonts load through `next/font` in `app/layout.tsx` (self-hosted, no requests to 
 | Hero title | `font-display text-4xl md:text-5xl font-extrabold tracking-tight` | Landing page only |
 | Section title | `text-xl font-semibold` (via `SectionTitle`) | Card headings |
 | Body | `text-base` (reports) / `text-sm` (cards, tables) | |
-| Eyebrow | `text-xs font-semibold uppercase tracking-wide` | "MATCHES", "WHY YOU MATCH" |
+| Eyebrow | `Eyebrow` component | "RESEARCH FIRST. APPLY SECOND.", "WHY YOU MATCH" |
 | Meta | `text-xs text-ink-subtle` | Dates, source counts |
 
 - **Display font:** Plus Jakarta Sans, extra-bold (`font-display font-extrabold`), for page titles,
@@ -83,6 +83,7 @@ Fonts load through `next/font` in `app/layout.tsx` (self-hosted, no requests to 
 | `Button`, `ButtonLink` | `ui/Button.tsx` | `primary` main action (one per area), `secondary`, `dark` (e.g. "Compare selected"), `inverse` on dark panels |
 | `Card`, `Inset` | `ui/Card.tsx` | Every content block; `highlight` for the fit card (band colour) or the item needing attention (`primary`) |
 | `Badge`, `Tag` | `ui/Badge.tsx` | Statuses (see table above); `Tag` for facts and technologies (`highlighted` = also on the user's profile) |
+| `Eyebrow` | `ui/Eyebrow.tsx` | Small uppercase label above a title or list; `success` for matches, `warning` for gaps |
 | `Chip` | `ui/Chip.tsx` | Selectable pills: countries, sectors, quick filters, shortlist stages |
 | `FitBadge` | `ui/FitBadge.tsx` | Fit as a pill: `full` "Strong fit · 82", `short` "Strong · 82" (tables), `score` "82" (mobile) |
 | `FitScoreRing` | `ui/FitScoreRing.tsx` | The signature fit visual on the company page |
@@ -93,6 +94,7 @@ Fonts load through `next/font` in `app/layout.tsx` (self-hosted, no requests to 
 | `TextField`, `SelectField` | `ui/Field.tsx` | Labelled inputs and filter dropdowns |
 | icons | `ui/icons.tsx` | Small inline icon set; always paired with text or an `aria-label` |
 | `AppShell` | `layout/AppShell.tsx` | Signed-in frame: top nav on desktop, bottom tab bar on mobile |
+| `PublicShell` | `layout/PublicShell.tsx` | Public frame (landing, log in, sample report): header with "Get started", footer with the privacy line. Call-to-action targets live in `publicLinks` |
 | `Container`, `PageHeader`, `SectionTitle` | `layout/Page.tsx` | Page width, page title block, card headings |
 | `Logo` | `layout/Logo.tsx` | Mark and wordmark; `onDark` for the admin header |
 
@@ -101,7 +103,9 @@ Formatting helpers: `formatResearchDate` and `pluralize` in `lib/format.ts`. Alw
 
 ## Layout patterns from the designs
 
+- **Public pages** sit inside `app/(public)/`, which wraps them in `PublicShell`.
 - **Signed-in pages** sit inside `app/(app)/`, which wraps them in `AppShell`.
+- **Section titles on marketing pages** use `font-display text-2xl md:text-3xl font-extrabold tracking-tight`.
 - **Desktop:** content in cards on the grey canvas. The company page uses a wide main column with
   a sticky right column (fit card, people, approach).
 - **Mobile:** no top bar; a bottom tab bar (Search, Shortlist, Compare, Profile). The company page

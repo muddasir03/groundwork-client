@@ -23,9 +23,9 @@ reports, a personal fit verdict, and the right people to contact. It talks to
 - **Read the product brief before designing any feature:**
   [groundwork-api/docs/PRODUCT.md](https://github.com/muddasir03/groundwork-api/blob/develop/docs/PRODUCT.md)
   (locally `../groundwork-api/docs/PRODUCT.md`). Its design, tone and accessibility sections apply here.
-- **Status:** design foundation only. The design system (tokens, components, `/design-system`) and
-  the app shell exist; the home page is a placeholder and no product screens are built yet. Never
-  describe features as built when they aren't.
+- **Status:** the design system (tokens, components, `/design-system`), the app shells and the
+  landing page exist. No product screens (search, company, compare, shortlist, profile, admin) are
+  built yet. Never describe features as built when they aren't.
 - **Read [docs/DESIGN.md](docs/DESIGN.md) before building any UI.** It is the design system every
   screen must follow.
 - **Stack:** Next.js 16 (App Router, Turbopack), React 19, TypeScript (strict), Tailwind CSS 4.
@@ -75,7 +75,8 @@ data-fetching, caching or routing code.
 - `components/ui/` — the design system's components; `components/layout/` — the app shell, page
   container and headers. See [docs/DESIGN.md](docs/DESIGN.md). Components used by only one route
   live next to that route.
-- `app/(app)/` — the signed-in product, wrapped in `AppShell`. `app/(app)/design-system/` is the
+- `app/(public)/` — public pages (landing, later log in and the sample report), wrapped in
+  `PublicShell`. `app/(app)/` — the signed-in product, wrapped in `AppShell`. `app/(app)/design-system/` is the
   living reference of every token and component.
 - `lib/api/` — **the only place that calls the API.** It reads `process.env.NEXT_PUBLIC_API_URL` and
   exports typed functions; response types live in `lib/api/types.ts`. Pages and components never

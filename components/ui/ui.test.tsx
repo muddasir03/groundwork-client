@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
+import { Eyebrow } from "@/components/ui/Eyebrow";
 import { SelectField, TextField } from "@/components/ui/Field";
 import { Avatar, CompanyMark } from "@/components/ui/Identity";
 import { ResearchMeta } from "@/components/ui/ResearchMeta";
@@ -96,5 +97,12 @@ describe("CompanyMark and Avatar", () => {
     );
     expect(screen.getByText("E")).toHaveAttribute("aria-hidden", "true");
     expect(screen.getByText("AR")).toHaveAttribute("aria-hidden", "true");
+  });
+});
+
+describe("Eyebrow", () => {
+  it("uses the tone colour", () => {
+    render(<Eyebrow tone="warning">Gaps to plan for</Eyebrow>);
+    expect(screen.getByText("Gaps to plan for")).toHaveClass("uppercase", "text-warning");
   });
 });

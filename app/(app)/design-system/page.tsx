@@ -5,6 +5,7 @@ import { Badge, Tag } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, Inset } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
+import { Eyebrow } from "@/components/ui/Eyebrow";
 import { SelectField, TextField } from "@/components/ui/Field";
 import { FitBadge } from "@/components/ui/FitBadge";
 import { FitReasons } from "@/components/ui/FitReasons";
@@ -76,7 +77,12 @@ export default function DesignSystemPage() {
             <p className="text-xl font-semibold">Section title</p>
             <p className="text-base text-ink">Body text in IBM Plex Sans, for reports and descriptions.</p>
             <p className="text-sm text-ink-muted">Secondary text</p>
-            <p className="text-xs font-semibold tracking-wide text-primary uppercase">Eyebrow label</p>
+            <div className="flex flex-wrap gap-4">
+              <Eyebrow>Eyebrow · primary</Eyebrow>
+              <Eyebrow tone="success">Why you match</Eyebrow>
+              <Eyebrow tone="warning">Gaps to plan for</Eyebrow>
+              <Eyebrow tone="subtle">Subtle</Eyebrow>
+            </div>
             <ResearchMeta researchedAt="2026-09-30" sourceCount={18} />
           </div>
         </Section>

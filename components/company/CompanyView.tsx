@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ApproachCard } from "@/components/company/ApproachCard";
 import { CompanyActions } from "@/components/company/CompanyActions";
-import { FitCard } from "@/components/company/FitCard";
+import { FitCard, NoFitCard } from "@/components/company/FitCard";
 import { PeopleCard } from "@/components/company/PeopleCard";
 import { ReportView } from "@/components/company/ReportView";
 import { companySizeLabel } from "@/components/company/labels";
@@ -32,7 +32,7 @@ export function CompanyView({ company, initialShortlist }: { company: Company; i
             <div className="min-w-0">
               <div className="flex items-center gap-3">
                 <h1 className="font-display text-3xl font-extrabold tracking-tight text-ink md:text-4xl">{company.name}</h1>
-                <FitBadge band={company.fit.band} score={company.fit.score} format="score" className="md:hidden" />
+                {company.fit && <FitBadge band={company.fit.band} score={company.fit.score} format="score" className="md:hidden" />}
               </div>
               <p className="mt-1 text-sm text-ink-muted md:text-base">{company.description}</p>
               <ul aria-label="Key details" className="mt-3 flex flex-wrap gap-2">
@@ -58,7 +58,7 @@ export function CompanyView({ company, initialShortlist }: { company: Company; i
           panelClassNames={{ report: "md:row-span-2", fit: "md:col-start-2", people: "md:col-start-2" }}
           items={[
             { id: "report", label: "Report", content: <ReportView company={company} /> },
-            { id: "fit", label: "Your fit", content: <FitCard fit={company.fit} /> },
+            { id: "fit", label: "Your fit", content: company.fit ? <FitCard fit={company.fit} /> : <NoFitCard /> },
             {
               id: "people",
               label: "People",

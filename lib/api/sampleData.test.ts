@@ -1,4 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { toApiCompany, toApiSummary } from "@/lib/api/fakeApi";
+
+// listCompanies/getCompany read from the API; serve them the sample companies instead.
+vi.mock("@/lib/api/remote", async () => {
+  const { sampleCompanies } = await import("@/lib/api/sampleData");
+  return {
+    fetchCompanies: async () => sampleCompanies.map(toApiSummary),
+    fetchCompany: async (slug: string) => {
+      const company = sampleCompanies.find((c) => c.slug === slug);
+      return company ? toApiCompany(company) : null;
+    },
+  };
+});
 import { SAMPLE_REPORT_SLUG, getCompany, listCompanies, listComparisons, toSummary } from "@/lib/api";
 import { sampleAdminCompanies, sampleCompanies, sampleShortlist } from "@/lib/api/sampleData";
 import type { Claim, Company, Fact } from "@/lib/api/types";
@@ -51,7 +64,8 @@ describe.each(sampleCompanies.map((company) => [company.name, company] as const)
   });
 
   it("explains its fit verdict", () => {
-    const { fit } = company;
+    const fit = company.fit!;
+    expect(company.fit).not.toBeNull();
     expect(fit.matches.length + fit.gaps.length).toBeGreaterThan(0);
     expect(fit.explanation).not.toBe("");
     expect(fit.score).toBeGreaterThanOrEqual(0);
@@ -89,7 +103,7 @@ describe("sample data", () => {
 
 describe("api functions", () => {
   it("lists companies best fit first", async () => {
-    const scores = (await listCompanies()).map((c) => c.fit.score);
+    const scores = (await listCompanies()).map((c) => c.fit!.score);
     expect(scores).toEqual([...scores].sort((a, b) => b - a));
   });
 
@@ -97,9 +111,15 @@ describe("api functions", () => {
     expect(await getCompany("no-such-company")).toBeNull();
   });
 
+  it("returns the API's research with the visitor's fit added", async () => {
+    const company = await getCompany("brisa-people");
+    expect(company?.report.summary).toEqual(sampleCompanies[0].report.summary);
+    expect(company?.fit?.score).toBe(82);
+  });
+
   it("summarises a company without leaking the full verdict", () => {
     const summary = toSummary(sampleCompanies[0]);
-    expect(Object.keys(summary.fit).sort()).toEqual(["band", "score", "topGap", "topMatch"]);
+    expect(Object.keys(summary.fit!).sort()).toEqual(["band", "score", "topGap", "topMatch"]);
   });
 
   it("marks a missing work policy as unconfirmed in comparisons", async () => {

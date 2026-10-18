@@ -1,7 +1,11 @@
-// The only way screens get data. Every function returns fictional sample data for now; each will
-// call groundwork-api (process.env.NEXT_PUBLIC_API_URL) once its endpoint exists, without the
-// screens changing.
+// The only way screens get data.
+// - Company research (listCompanies, getCompany) comes from groundwork-api. Call these only at
+//   request time: the page must `await connection()` inside a Suspense boundary (loading.tsx).
+// - Everything personal (profile, shortlist, compare, fit) is still fictional sample data until
+//   accounts exist in the API; see personal.ts.
 
+import { byFit, personalize, withFitSummary } from "@/lib/api/personal";
+import { fetchCompanies, fetchCompany } from "@/lib/api/remote";
 import {
   sampleAdminCompanies,
   sampleAdminStats,
@@ -22,7 +26,7 @@ import type {
 } from "@/lib/api/types";
 
 export function toSummary(company: Company): CompanySummary {
-  const { band, score, topMatch, topGap } = company.fit;
+  const fit = company.fit;
   return {
     slug: company.slug,
     name: company.name,
@@ -34,7 +38,7 @@ export function toSummary(company: Company): CompanySummary {
     stage: company.stage,
     researchedAt: company.researchedAt,
     sourceCount: company.sourceCount,
-    fit: { band, score, topMatch, topGap },
+    fit: fit && { band: fit.band, score: fit.score, topMatch: fit.topMatch, topGap: fit.topGap },
   };
 }
 
@@ -58,17 +62,20 @@ export function toComparison(company: Company): CompanyComparison {
   };
 }
 
-/** Published companies, best fit first. */
+/** Published companies from the API, best fit first. Request time only. */
 export async function listCompanies(): Promise<CompanySummary[]> {
-  return sampleCompanies.map(toSummary).sort((a, b) => b.fit.score - a.fit.score);
+  return (await fetchCompanies()).map(withFitSummary).sort(byFit);
 }
 
-export async function listCompanySlugs(): Promise<string[]> {
-  return sampleCompanies.map((company) => company.slug);
-}
-
+/** A published company's report from the API, or null. Request time only. */
 export async function getCompany(slug: string): Promise<Company | null> {
-  return sampleCompanies.find((company) => company.slug === slug) ?? null;
+  const company = await fetchCompany(slug);
+  return company && personalize(company);
+}
+
+/** The fictional sample report, from local data, for the landing page preview (no API call). */
+export function getSampleReport(): Company {
+  return sampleCompanies.find((company) => company.slug === SAMPLE_REPORT_SLUG)!;
 }
 
 export async function listComparisons(): Promise<CompanyComparison[]> {
@@ -96,5 +103,6 @@ export async function getAdminStats(): Promise<AdminStats> {
   return sampleAdminStats;
 }
 
-/** The fictional company used for the landing page preview and the public sample report. */
+/** The fictional company used for the landing page preview and the public sample report.
+ *  Also seeded on the staging API, so /sample-report resolves there. */
 export const SAMPLE_REPORT_SLUG = "brisa-people";

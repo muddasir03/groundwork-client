@@ -20,9 +20,13 @@ const rows: Array<{ label: string; value: (company: CompanyComparison) => ReactN
   { label: "Tech stack", value: (c) => c.techStack.join(", ") },
   { label: "Work policy", value: (c) => <FactValue fact={c.workPolicy} /> },
   { label: "Main product", value: (c) => c.mainProduct },
-  { label: "Your top match", value: (c) => c.fit.topMatch },
-  { label: "Your top gap", value: (c) => c.fit.topGap },
+  { label: "Your top match", value: (c) => c.fit?.topMatch ?? <NoVerdict /> },
+  { label: "Your top gap", value: (c) => c.fit?.topGap ?? <NoVerdict /> },
 ];
+
+function NoVerdict() {
+  return <span className="text-ink-subtle">No verdict yet</span>;
+}
 
 export function CompareView({ companies }: { companies: CompanyComparison[] }) {
   const compare = useCompare();
@@ -52,7 +56,7 @@ export function CompareView({ companies }: { companies: CompanyComparison[] }) {
                         {company.name}
                       </Link>
                     </div>
-                    <FitBadge className="mt-2" band={company.fit.band} score={company.fit.score} />
+                    {company.fit && <FitBadge className="mt-2" band={company.fit.band} score={company.fit.score} />}
                   </th>
                 ))}
               </tr>

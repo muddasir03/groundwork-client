@@ -8,14 +8,14 @@ import { ProfileView } from "./profile/ProfileView";
 import { SearchView, filterCompanies } from "./search/SearchView";
 import { ShortlistView } from "./shortlist/ShortlistView";
 
-const summaries = sampleCompanies.map(toSummary).sort((a, b) => b.fit.score - a.fit.score);
+const summaries = sampleCompanies.map(toSummary).sort((a, b) => b.fit!.score - a.fit!.score);
 const anyFilters = { country: "", sector: "", city: "", size: "", fit: "" };
 
 describe("Search", () => {
   it("filters by fit band, city and sector, keeping the best fit first", () => {
     const strong = filterCompanies(summaries, { ...anyFilters, fit: "strong" });
     expect(strong.length).toBeGreaterThan(0);
-    expect(strong.every((c) => c.fit.band === "strong")).toBe(true);
+    expect(strong.every((c) => c.fit!.band === "strong")).toBe(true);
     expect(filterCompanies(summaries, { ...anyFilters, city: "Barcelona" }).every((c) => c.city === "Barcelona")).toBe(true);
     expect(filterCompanies(summaries, { ...anyFilters, sector: "No such sector" })).toEqual([]);
   });
@@ -54,8 +54,8 @@ describe("Search", () => {
     render(<SearchView companies={summaries} initialShortlist={[]} />);
     const first = screen.getAllByRole("article")[0];
     expect(within(first).getByRole("link", { name: summaries[0].name })).toHaveAttribute("href", `/companies/${summaries[0].slug}`);
-    expect(first).toHaveTextContent(summaries[0].fit.topMatch);
-    expect(first).toHaveTextContent(summaries[0].fit.topGap);
+    expect(first).toHaveTextContent(summaries[0].fit!.topMatch);
+    expect(first).toHaveTextContent(summaries[0].fit!.topGap);
   });
 });
 

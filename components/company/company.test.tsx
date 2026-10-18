@@ -2,8 +2,10 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { ApproachCard } from "@/components/company/ApproachCard";
+import { CompanyCard } from "@/components/company/CompanyCard";
 import { CompanyView } from "@/components/company/CompanyView";
 import { PeopleCard } from "@/components/company/PeopleCard";
+import { toSummary } from "@/lib/api";
 import { sampleCompanies } from "@/lib/api/sampleData";
 
 const brisa = sampleCompanies.find((c) => c.slug === "brisa-people")!;
@@ -15,7 +17,7 @@ describe("CompanyView", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Brisa People" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Strong fit" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Matches" })).toBeInTheDocument();
-    expect(screen.getByText(brisa.fit.explanation)).toBeInTheDocument();
+    expect(screen.getByText(brisa.fit!.explanation)).toBeInTheDocument();
     expect(screen.getByText("Lucía Ferrer")).toBeInTheDocument();
   });
 
@@ -88,5 +90,23 @@ describe("ApproachCard", () => {
     render(<ApproachCard approach={briefCompany.approach} people={briefCompany.people} />);
     expect(screen.getByRole("button", { name: "Generate my approach" })).toBeDisabled();
     expect(screen.getByText("Not available for this company yet.")).toBeInTheDocument();
+  });
+});
+
+describe("without a fit verdict", () => {
+  const noFit = { ...brisa, fit: null, approach: null };
+
+  it("explains the missing fit instead of showing a score", () => {
+    render(<CompanyView company={noFit} initialShortlist={[]} />);
+    expect(screen.queryByRole("img", { name: /score/ })).not.toBeInTheDocument();
+    expect(screen.getByText(/Complete your profile to see your fit/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Go to your profile" })).toHaveAttribute("href", "/profile");
+  });
+
+  it("shows the search card without a fit badge", () => {
+    const summary = { ...toSummary(brisa), fit: null };
+    render(<CompanyCard company={summary} saved={false} compared={false} compareFull={false} onToggleSave={() => {}} onToggleCompare={() => {}} />);
+    expect(screen.queryByText(/fit ·/)).not.toBeInTheDocument();
+    expect(screen.getByText("Complete your profile to see your fit.")).toBeInTheDocument();
   });
 });

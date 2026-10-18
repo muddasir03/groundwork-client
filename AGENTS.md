@@ -24,9 +24,11 @@ reports, a personal fit verdict, and the right people to contact. It talks to
   [groundwork-api/docs/PRODUCT.md](https://github.com/muddasir03/groundwork-api/blob/develop/docs/PRODUCT.md)
   (locally `../groundwork-api/docs/PRODUCT.md`). Its design, tone and accessibility sections apply here.
 - **Status:** every MVP screen is built (landing, search, company, compare, shortlist, profile,
-  admin companies) on **fictional sample data**. Nothing is connected to groundwork-api yet: no
-  accounts, no saving beyond the browser, no CV upload, no research or approach generation, and
-  the admin actions are disabled. Never describe features as built when they aren't.
+  admin companies). **Search, Shortlist and company pages read company research from
+  groundwork-api** (fictional sample research on staging). Everything personal (fit verdicts,
+  approaches, profile, shortlist, compare) is still fictional sample data; there are no accounts, no
+  saving beyond the browser, no CV upload, no research or approach generation, and the admin
+  screens are not connected. Never describe features as built when they aren't.
 - **Read [docs/DESIGN.md](docs/DESIGN.md) before building any UI.** It is the design system every
   screen must follow.
 - **Stack:** Next.js 16 (App Router, Turbopack), React 19, TypeScript (strict), Tailwind CSS 4.
@@ -80,11 +82,19 @@ data-fetching, caching or routing code.
 - `app/(public)/` — public pages (landing, later log in and the sample report), wrapped in
   `PublicShell`. `app/(app)/` — the signed-in product, wrapped in `AppShell`. `app/(app)/design-system/` is the
   living reference of every token and component.
-- `lib/api/` — **the only place screens get data from.** `index.ts` exports typed async functions,
-  `types.ts` is the data contract the Rails API must match, and `sampleData.ts` holds the fictional
-  sample data those functions return until each endpoint exists. To connect an endpoint, change the
-  function in `index.ts` to call `process.env.NEXT_PUBLIC_API_URL`; screens don't change. Pages and
-  components never `fetch` the API directly.
+- `lib/api/` — **the only place screens get data from.** Pages and components never `fetch` directly.
+  - `index.ts`: the typed functions screens call.
+  - `types.ts`: the data contract, including what the API returns (`Api*` types).
+  - `http.ts`: the only code that sends requests (`apiGet`, timeout, `ApiError`, 404 → null).
+    **Every value placed in an API path goes through `segment()`** (URL-encoding), so input like
+    `../admin` can't change which endpoint is called.
+  - `remote.ts`: cached API reads (`"use cache"` + `cacheLife("minutes")`).
+  - `personal.ts`: adds the visitor's fit, approach and "on your profile" marks to public research
+    (from sample data until accounts exist). Missing fit stays `null`; never invent one.
+  - `sampleData.ts`: fictional sample data; `fakeApi.ts` turns it into API responses for tests.
+- **API data is read at request time only, never at build time**, so builds don't depend on the
+  API. A page that reads it calls `await connection()` and has a `loading.tsx` (its Suspense
+  boundary). `app/(app)/error.tsx` shows a friendly "couldn't load" state with Try again.
 - `lib/store/` — per-browser state (compare selection, shortlist) in localStorage, read through
   `useSyncExternalStore`. Temporary until accounts exist in the API.
 - `components/company/` — product components shared by several screens (company card, report, fit

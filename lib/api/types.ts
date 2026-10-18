@@ -87,7 +87,8 @@ export type CompanySummary = {
   stage: string | null;
   researchedAt: IsoDate;
   sourceCount: number;
-  fit: FitSummary;
+  /** The visitor's fit. Null when there's no verdict yet (no profile, or not computed). */
+  fit: FitSummary | null;
 };
 
 export type CompanySize = "1-50" | "51-200" | "201-1000" | "1000+";
@@ -97,16 +98,32 @@ export type Company = Omit<CompanySummary, "fit"> & {
   sources: Source[];
   people: Person[];
   peopleVerifiedAt: IsoDate;
-  fit: FitVerdict;
+  /** The visitor's full verdict. Null when there's no verdict yet; never shown without reasons. */
+  fit: FitVerdict | null;
   /** Generated on request; null until the user asks for one. */
   approach: Approach | null;
 };
+
+// ── What groundwork-api returns (docs/API.md in groundwork-api) ─────────────────────────────────
+// Public research only. The personal parts (fit, approach, "also on your profile") depend on the
+// signed-in user and are added by the client until accounts exist.
+
+export type ApiCompanySummary = Omit<CompanySummary, "fit">;
+
+export type ApiCompany = Omit<Company, "fit" | "approach" | "report"> & {
+  report: Omit<CompanyReport, "productEngineering"> & {
+    productEngineering: { stack: Array<{ name: string }>; points: Claim[] };
+  };
+};
+
+export type ApiList<T> = { data: T[]; meta: { page: number; perPage: number; total: number } };
+export type ApiItem<T> = { data: T };
 
 /** The comparison rows for one company (Compare page). */
 export type CompanyComparison = {
   slug: string;
   name: string;
-  fit: FitSummary;
+  fit: FitSummary | null;
   sector: string;
   headquarters: string;
   stage: string | null;

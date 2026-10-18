@@ -23,19 +23,17 @@ export function PublicHeader() {
         <nav aria-label="Main" className="flex items-center gap-1 sm:gap-2">
           <Link
             href={publicLinks.sampleReport}
-            className="hidden min-h-11 items-center rounded-lg px-3 text-sm font-medium text-ink-muted hover:text-ink sm:inline-flex"
+            className="hidden min-h-11 items-center rounded-lg px-3 text-base font-semibold text-ink-muted hover:text-ink sm:inline-flex"
           >
             Sample report
           </Link>
           <Link
             href={publicLinks.logIn}
-            className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-ink-muted hover:text-ink"
+            className="inline-flex min-h-11 items-center rounded-lg px-3 text-base font-semibold text-ink-muted hover:text-ink"
           >
             Log in
           </Link>
-          <ButtonLink href={publicLinks.getStarted} size="sm" className="min-h-11">
-            Get started
-          </ButtonLink>
+          <ButtonLink href={publicLinks.getStarted}>Get started</ButtonLink>
         </nav>
       </Container>
     </header>

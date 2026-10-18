@@ -3,6 +3,7 @@ import { Container } from "@/components/layout/Page";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Eyebrow } from "@/components/ui/Eyebrow";
+import { SAMPLE_REPORT_SLUG, getCompany } from "@/lib/api";
 import { SampleFitCard } from "./_components/SampleFitCard";
 
 const steps = [
@@ -41,7 +42,9 @@ const promises = [
   },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const sample = await getCompany(SAMPLE_REPORT_SLUG);
+
   return (
     <>
       <section className="bg-canvas">
@@ -64,7 +67,7 @@ export default function LandingPage() {
               </ButtonLink>
             </div>
           </div>
-          <SampleFitCard />
+          {sample && <SampleFitCard company={sample} />}
         </Container>
       </section>
 

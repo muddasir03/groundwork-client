@@ -1,13 +1,15 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-export type EyebrowTone = "primary" | "success" | "warning" | "subtle";
+export type EyebrowTone = "primary" | "success" | "warning" | "subtle" | "onDark";
 
 const tones: Record<EyebrowTone, string> = {
   primary: "text-primary",
   success: "text-success",
   warning: "text-warning",
   subtle: "text-ink-subtle",
+  // On ink (dark) panels such as "Your approach".
+  onDark: "text-primary-soft",
 };
 
 /**

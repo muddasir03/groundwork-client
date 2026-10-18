@@ -12,6 +12,7 @@ import Link from "next/link";
  * numbers match the report it links to. The brief rules out claims about real companies here.
  */
 export function SampleFitCard({ company }: { company: Company }) {
+  if (!company.fit) return null;
   return (
     <Card padding="lg" className="shadow-lg shadow-ink/5">
       <div className="flex items-start gap-3">

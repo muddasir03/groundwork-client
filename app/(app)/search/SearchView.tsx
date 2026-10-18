@@ -28,7 +28,7 @@ export function filterCompanies(companies: CompanySummary[], filters: SearchFilt
       (filters.sector === ANY || company.sector === filters.sector) &&
       (filters.city === ANY || company.city === filters.city) &&
       (filters.size === ANY || company.size === filters.size) &&
-      (filters.fit === ANY || company.fit.band === filters.fit),
+      (filters.fit === ANY || company.fit?.band === filters.fit),
   );
 }
 

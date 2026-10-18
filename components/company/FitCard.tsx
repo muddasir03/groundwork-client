@@ -1,3 +1,6 @@
+import { NO_FIT_YET } from "@/components/company/CompanyCard";
+import { SectionTitle } from "@/components/layout/Page";
+import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { FitReasons } from "@/components/ui/FitReasons";
 import { FitScoreRing } from "@/components/ui/FitScoreRing";
@@ -23,6 +26,19 @@ export function FitCard({ fit }: { fit: FitVerdict }) {
       <FitReasons className="mt-5" matches={fit.matches} gaps={fit.gaps} />
       <p className="mt-4 text-sm text-ink">{fit.explanation}</p>
       <VerdictFeedback />
+    </Card>
+  );
+}
+
+/** The fit panel when there's no verdict yet: explains why, and never shows a made-up score. */
+export function NoFitCard() {
+  return (
+    <Card as="section">
+      <SectionTitle>Your fit</SectionTitle>
+      <p className="mt-2 text-sm text-ink-muted">{NO_FIT_YET} Fit verdicts compare this research with your skills, experience and goals.</p>
+      <ButtonLink href="/profile" variant="secondary" className="mt-4">
+        Go to your profile
+      </ButtonLink>
     </Card>
   );
 }

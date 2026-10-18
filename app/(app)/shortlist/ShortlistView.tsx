@@ -75,7 +75,7 @@ export function ShortlistView({ companies, initialShortlist }: { companies: Comp
                             <CompanyCell company={row.company} />
                           </Td>
                           <Td last={last}>
-                            <FitBadge band={row.company.fit.band} score={row.company.fit.score} format="short" />
+                            {row.company.fit ? <FitBadge band={row.company.fit.band} score={row.company.fit.score} format="short" /> : <NoFit />}
                           </Td>
                           <Td last={last}>
                             <Badge tone={shortlistStatusTone[row.status]}>{shortlistStatusLabel[row.status]}</Badge>
@@ -97,7 +97,7 @@ export function ShortlistView({ companies, initialShortlist }: { companies: Comp
                     <Card>
                       <div className="flex items-start justify-between gap-3">
                         <CompanyCell company={row.company} />
-                        <FitBadge band={row.company.fit.band} score={row.company.fit.score} format="score" />
+                        {row.company.fit && <FitBadge band={row.company.fit.band} score={row.company.fit.score} format="score" />}
                       </div>
                       <div className="mt-3 flex items-center justify-between gap-3">
                         <Badge tone={shortlistStatusTone[row.status]}>{shortlistStatusLabel[row.status]}</Badge>
@@ -116,6 +116,10 @@ export function ShortlistView({ companies, initialShortlist }: { companies: Comp
       )}
     </Container>
   );
+}
+
+function NoFit() {
+  return <span className="text-xs text-ink-subtle">No verdict yet</span>;
 }
 
 function CompanyCell({ company }: { company: CompanySummary }) {

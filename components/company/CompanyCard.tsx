@@ -7,6 +7,9 @@ import { ResearchMeta } from "@/components/ui/ResearchMeta";
 import type { CompanySummary } from "@/lib/api/types";
 import { companyPath } from "@/components/company/paths";
 
+/** Shown instead of a fit when there's no verdict yet. Never invent a score. */
+export const NO_FIT_YET = "Complete your profile to see your fit.";
+
 type CompanyCardProps = {
   company: CompanySummary;
   saved: boolean;
@@ -34,18 +37,20 @@ export function CompanyCard({ company, saved, compared, compareFull, onToggleSav
             {company.city} · {company.sector}
           </p>
         </div>
-        {/* Visibility lives on wrappers: `hidden` on FitBadge itself would fight its own inline-flex. */}
-        <span className="hidden sm:block">
-          <FitBadge band={company.fit.band} score={company.fit.score} />
-        </span>
-        <span className="sm:hidden">
-          <FitBadge band={company.fit.band} score={company.fit.score} format="score" />
-        </span>
+        {company.fit && (
+          <>
+            {/* Visibility lives on wrappers: `hidden` on FitBadge itself would fight its own inline-flex. */}
+            <span className="hidden sm:block">
+              <FitBadge band={company.fit.band} score={company.fit.score} />
+            </span>
+            <span className="sm:hidden">
+              <FitBadge band={company.fit.band} score={company.fit.score} format="score" />
+            </span>
+          </>
+        )}
       </div>
       <p className="mt-3 text-sm text-ink">{company.description}</p>
-      <Inset className="mt-3">
-        {company.fit.topMatch} · {company.fit.topGap}
-      </Inset>
+      <Inset className="mt-3">{company.fit ? `${company.fit.topMatch} · ${company.fit.topGap}` : NO_FIT_YET}</Inset>
       {/* Spacer: keeps the footer at the bottom when cards in a row have different heights. */}
       <div className="min-h-4 flex-1" />
       <div className="hidden flex-wrap items-center justify-between gap-3 border-t border-line pt-3 md:flex">

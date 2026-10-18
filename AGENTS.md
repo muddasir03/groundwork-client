@@ -49,7 +49,9 @@ it must pass to merge.
   Open the PR into `develop`. Vercel posts a preview URL on every PR.
 - **Releases** are a PR from `develop` into `main`, merged by the project owner only. Agents never
   merge into `main`.
-- After a release, open a PR from `main` back into `develop` so the release merge commit is on both.
+- `main` only receives merges from `develop`, so no back-merge is needed after a release (GitHub may
+  show `develop` as "behind" by the release merge commit; that's harmless). If a fix ever has to go
+  straight to `main`, merge `main` back into `develop` with a merge commit, not a squash.
 - Keep PRs small and focused on one change. Commit messages: imperative mood, and say *why*.
 - Commit `AGENTS.md` if `next dev` changed its managed blocks, so the tree stays clean.
 

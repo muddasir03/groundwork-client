@@ -1,10 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  experimental: {
-    agentFeedback: true,
-  },
   cacheComponents: true,
   async redirects() {
     // "See a sample report" opens the fictional sample company (lib/api SAMPLE_REPORT_SLUG).

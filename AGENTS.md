@@ -27,8 +27,9 @@ reports, a personal fit verdict, and the right people to contact. It talks to
   admin companies). **Search, Shortlist and company pages read company research from
   groundwork-api** (fictional sample research on staging). Everything personal (fit verdicts,
   approaches, profile, shortlist, compare) is still fictional sample data; there are no accounts, no
-  saving beyond the browser, no CV upload, no research or approach generation, and the admin
-  screens are not connected. Never describe features as built when they aren't.
+  saving beyond the browser, no CV upload, and no research or approach generation. The **admin
+  console is real**: admins log in, and create, edit, review and publish research through the API.
+  Never describe features as built when they aren't.
 - **Read [docs/DESIGN.md](docs/DESIGN.md) before building any UI.** It is the design system every
   screen must follow.
 - **Stack:** Next.js 16 (App Router, Turbopack), React 19, TypeScript (strict), Tailwind CSS 4.
@@ -95,6 +96,18 @@ data-fetching, caching or routing code.
 - **API data is read at request time only, never at build time**, so builds don't depend on the
   API. A page that reads it calls `await connection()` and has a `loading.tsx` (its Suspense
   boundary). `app/(app)/error.tsx` shows a friendly "couldn't load" state with Try again.
+- `lib/admin/` — **the admin Data Access Layer (server-only).** `dal.ts` is the only code that
+  calls `/api/v1/admin`; every read and write starts with `verifyAdmin()`, which checks the session
+  **with the API** (a cookie existing proves nothing). `session.ts` owns the session cookie
+  (HttpOnly, Secure, SameSite=Strict, `__Host-` in production). The token never reaches the browser.
+- `app/admin/actions.ts` — admin server actions. **Every server action is a public endpoint:** each
+  validates its own input and re-verifies the session (via `adminWrite`/`verifyAdmin`); never rely
+  on the page having checked. Never return the token. Actions that change research call
+  `updateTag(COMPANIES_TAG)` so public pages refresh immediately.
+- `app/admin/(console)/` — admin pages (wrapped in `AdminShell`). Layouts never do auth checks
+  (they don't re-run on navigation); pages call the DAL. `proxy.ts` only redirects visitors
+  without a cookie to `/admin/login` as a convenience; it is not a security boundary.
+- The full security design is in groundwork-api `docs/SECURITY.md`; update it with any auth change.
 - `lib/store/` — per-browser state (compare selection, shortlist) in localStorage, read through
   `useSyncExternalStore`. Temporary until accounts exist in the API.
 - `components/company/` — product components shared by several screens (company card, report, fit

@@ -174,7 +174,6 @@ export type AdminCompanyRow = {
 };
 
 export type AdminStats = {
-  country: string;
   published: number;
   total: number;
   waitingForReview: number;

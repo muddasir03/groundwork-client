@@ -3,7 +3,8 @@ import { ChevronDownIcon } from "@/components/ui/icons";
 
 // Shared look for inputs and selects. Horizontal padding is set per control (not here) so the
 // select's extra right padding for its arrow never fights a shared `px-*`.
-const control = "min-h-11 w-full rounded-lg border border-line-strong bg-surface text-sm text-ink placeholder:text-ink-subtle";
+const control =
+  "min-h-11 w-full rounded-lg border border-line-strong bg-surface text-sm text-ink placeholder:text-ink-subtle disabled:bg-fill disabled:text-ink-subtle";
 
 function Label({ htmlFor, children }: { htmlFor: string; children: string }) {
   return (
@@ -13,14 +14,39 @@ function Label({ htmlFor, children }: { htmlFor: string; children: string }) {
   );
 }
 
+/** Optional helper text under a field, linked with aria-describedby so screen readers read it. */
+function Hint({ id, children }: { id: string; children?: string }) {
+  return children ? (
+    <p id={id} className="mt-1 text-xs text-ink-subtle">
+      {children}
+    </p>
+  ) : null;
+}
+
+type FieldExtras = { label: string; hint?: string };
+
 /** A labelled text input. Every input in Groundwork has a visible label. */
-export function TextField({ label, className, id, ...props }: ComponentProps<"input"> & { label: string }) {
+export function TextField({ label, hint, className, id, ...props }: ComponentProps<"input"> & FieldExtras) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
   return (
     <div className={className}>
       <Label htmlFor={inputId}>{label}</Label>
-      <input id={inputId} className={`${control} px-3`} {...props} />
+      <input id={inputId} aria-describedby={hint ? `${inputId}-hint` : undefined} className={`${control} px-3`} {...props} />
+      <Hint id={`${inputId}-hint`}>{hint}</Hint>
+    </div>
+  );
+}
+
+/** A labelled multi-line input, for research text. */
+export function TextAreaField({ label, hint, className, id, rows = 3, ...props }: ComponentProps<"textarea"> & FieldExtras) {
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+  return (
+    <div className={className}>
+      <Label htmlFor={inputId}>{label}</Label>
+      <textarea id={inputId} rows={rows} aria-describedby={hint ? `${inputId}-hint` : undefined} className={`${control} px-3 py-2.5`} {...props} />
+      <Hint id={`${inputId}-hint`}>{hint}</Hint>
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { Disclosure } from "@/components/ui/Disclosure";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FactValue } from "@/components/ui/FactValue";
 import { Eyebrow } from "@/components/ui/Eyebrow";
-import { SelectField, TextField } from "@/components/ui/Field";
+import { SelectField, TextAreaField, TextField } from "@/components/ui/Field";
 import { Avatar, CompanyMark } from "@/components/ui/Identity";
 import { ResearchMeta } from "@/components/ui/ResearchMeta";
 import { StatTile } from "@/components/ui/StatTile";
@@ -171,5 +171,14 @@ describe("EmptyState", () => {
     render(<EmptyState title="Nothing here" action={<ButtonLink href="/search">Find companies</ButtonLink>} />);
     expect(screen.getByText("Nothing here")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Find companies" })).toBeInTheDocument();
+  });
+});
+
+describe("TextAreaField and hints", () => {
+  it("labels the text area and links its hint for screen readers", () => {
+    render(<TextAreaField label="Summary" hint="Two or three sentences." />);
+    const box = screen.getByRole("textbox", { name: "Summary" });
+    expect(box.tagName).toBe("TEXTAREA");
+    expect(box).toHaveAccessibleDescription("Two or three sentences.");
   });
 });

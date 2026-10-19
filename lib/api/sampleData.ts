@@ -3,8 +3,6 @@
 // reserved for examples) so no link leads to a real site. Never add real companies or people.
 
 import type {
-  AdminCompanyRow,
-  AdminStats,
   Company,
   CompanySize,
   Fact,
@@ -421,28 +419,3 @@ export const sampleShortlist: ShortlistEntry[] = [
   { slug: "vela-pay", status: "applied", notes: "Applied through the careers page.", updatedAt: "2026-10-09" },
 ];
 
-// Only published companies reach users (Search, company pages). The last three are still in the
-// research pipeline, so they appear here and nowhere else.
-export const sampleAdminCompanies: AdminCompanyRow[] = [
-  ...sampleCompanies.map((company) => ({
-    slug: company.slug,
-    name: company.name,
-    status: "published" as const,
-    lastResearchedAt: company.researchedAt,
-    sourceCount: company.sourceCount,
-    contactsVerified: company.people.filter((p) => p.name !== null).length,
-    contactsTotal: company.people.length,
-  })),
-  { slug: "faro-robotics", name: "Faro Robotics", status: "in_review", lastResearchedAt: "2026-10-14", sourceCount: 9, contactsVerified: 2, contactsTotal: 4 },
-  { slug: "nube-legal", name: "Nube Legal", status: "researching", lastResearchedAt: null, sourceCount: null, contactsVerified: null, contactsTotal: null },
-  { slug: "ola-travel", name: "Ola Travel", status: "draft", lastResearchedAt: null, sourceCount: null, contactsVerified: null, contactsTotal: null },
-];
-
-export const sampleAdminStats: AdminStats = {
-  country: "Spain",
-  published: sampleAdminCompanies.filter((row) => row.status === "published").length,
-  total: sampleAdminCompanies.length,
-  waitingForReview: sampleAdminCompanies.filter((row) => row.status === "in_review").length,
-  verdictsCorrectPercent: null,
-  aiCostThisMonthUsd: null,
-};

@@ -13,7 +13,7 @@ vi.mock("@/lib/api/remote", async () => {
   };
 });
 import { SAMPLE_REPORT_SLUG, getCompany, listCompanies, listComparisons, toSummary } from "@/lib/api";
-import { sampleAdminCompanies, sampleCompanies, sampleShortlist } from "@/lib/api/sampleData";
+import { sampleCompanies, sampleShortlist } from "@/lib/api/sampleData";
 import type { Claim, Company, Fact } from "@/lib/api/types";
 
 // These tests hold the sample data to the product brief's rules, the same rules the API's data
@@ -90,10 +90,6 @@ describe("sample data", () => {
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 
-  it("shows users only companies that are published in the admin pipeline", () => {
-    const published = new Set(sampleAdminCompanies.filter((row) => row.status === "published").map((row) => row.slug));
-    for (const company of sampleCompanies) expect(published).toContain(company.slug);
-  });
 
   it("starts the shortlist with known companies only", () => {
     const slugs = sampleCompanies.map((c) => c.slug);

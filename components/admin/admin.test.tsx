@@ -73,3 +73,41 @@ describe("FormMessage", () => {
     expect(container).toBeEmptyDOMElement();
   });
 });
+
+describe("two-factor screens", () => {
+  it("setup: start, scan, confirm, then show the recovery codes once", async () => {
+    vi.resetModules();
+    const confirmTwoFactor = vi.fn().mockResolvedValue({ ok: true, recoveryCodes: ["aaaaa-bbbbb", "ccccc-ddddd"] });
+    vi.doMock("@/app/admin/actions", () => ({
+      startTwoFactorSetup: vi.fn().mockResolvedValue({ ok: true, qrCodeDataUri: "data:image/svg+xml;base64,PHN2Zz4=", secret: "JBSWY3DPEHPK3PXP" }),
+      confirmTwoFactor,
+      regenerateRecoveryCodes: vi.fn(),
+    }));
+    const { TwoFactorSetup } = await import("@/components/admin/TwoFactorSetup");
+    render(<TwoFactorSetup />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Start setup" }));
+    expect(await screen.findByRole("img", { name: /QR code/ })).toHaveAttribute("src", "data:image/svg+xml;base64,PHN2Zz4=");
+    expect(screen.getByText("JBSW Y3DP EHPK 3PXP")).toBeInTheDocument();
+
+    const turnOn = screen.getByRole("button", { name: "Turn on two-factor login" });
+    expect(turnOn).toBeDisabled();
+    await userEvent.type(screen.getByRole("textbox", { name: /6-digit code/ }), "123456");
+    await userEvent.click(turnOn);
+
+    expect(confirmTwoFactor).toHaveBeenCalledWith("123456");
+    const codes = await screen.findByRole("list", { name: "Recovery codes" });
+    expect(within(codes).getAllByRole("listitem")).toHaveLength(2);
+    expect(screen.getByRole("link", { name: /continue/ })).toHaveAttribute("href", "/admin");
+  });
+
+  it("code entry switches between the app code and a recovery code", async () => {
+    vi.resetModules();
+    vi.doMock("@/app/admin/actions", () => ({ verifyCode: vi.fn() }));
+    const { VerifyCodeForm } = await import("@/components/admin/VerifyCodeForm");
+    render(<VerifyCodeForm />);
+    expect(screen.getByRole("textbox", { name: "6-digit code" })).toHaveAttribute("autocomplete", "one-time-code");
+    await userEvent.click(screen.getByRole("button", { name: "Use a recovery code instead" }));
+    expect(screen.getByRole("textbox", { name: "Recovery code" })).toBeInTheDocument();
+  });
+});

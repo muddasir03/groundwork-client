@@ -6,8 +6,11 @@ const cookieJar = new Map<string, { value: string; options?: Record<string, unkn
 vi.mock("next/headers", () => ({
   cookies: async () => ({
     get: (name: string) => (cookieJar.has(name) ? { name, value: cookieJar.get(name)!.value } : undefined),
-    set: (name: string, value: string, options: Record<string, unknown>) => cookieJar.set(name, { value, options }),
-    delete: (name: string) => cookieJar.delete(name),
+    // An expired overwrite (maxAge 0) is how the app deletes cookies, like a browser would treat it.
+    set: (name: string, value: string, options: Record<string, unknown>) =>
+      options?.maxAge === 0 ? cookieJar.delete(name) : cookieJar.set(name, { value, options }),
+    // Next accepts a name or { name, path } (needed for path-scoped cookies like the challenge).
+    delete: (arg: string | { name: string }) => cookieJar.delete(typeof arg === "string" ? arg : arg.name),
   }),
 }));
 
@@ -25,7 +28,7 @@ vi.mock("next/navigation", () => ({
 const updateTag = vi.fn();
 vi.mock("next/cache", () => ({ updateTag: (tag: string) => updateTag(tag), cacheLife: () => undefined, cacheTag: () => undefined }));
 
-const { changeStatus, login, logout, saveReport } = await import("./actions");
+const { changeStatus, login, logout, saveReport, startTwoFactorSetup, verifyCode } = await import("./actions");
 
 const fetchMock = vi.fn();
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
@@ -121,7 +124,7 @@ describe("protected actions", () => {
   it("save a report and expire the public cache", async () => {
     cookieJar.set("gw_admin", { value: TOKEN });
     fetchMock
-      .mockResolvedValueOnce(json({ data: { user: { id: "1", emailAddress: "a@example.com", role: "admin" } } })) // session check
+      .mockResolvedValueOnce(json({ data: { user: { id: "1", emailAddress: "a@example.com", role: "admin", twoFactorEnabled: true } } })) // session check
       .mockResolvedValueOnce(json({ data: { slug: "brisa-people" } })); // the write
     const result = await saveReport("brisa-people", { sources: [], technologies: ["Rails"] });
     expect(result).toEqual({ ok: true, message: "Report saved." });
@@ -135,7 +138,7 @@ describe("protected actions", () => {
   it("pass the API's validation problems back to the form", async () => {
     cookieJar.set("gw_admin", { value: TOKEN });
     fetchMock
-      .mockResolvedValueOnce(json({ data: { user: {} } }))
+      .mockResolvedValueOnce(json({ data: { user: { twoFactorEnabled: true } } }))
       .mockResolvedValueOnce(json({ error: { code: "invalid", message: "Please fix the highlighted problems.", details: [{ path: "status", message: "Add a summary" }] } }, 422));
     const result = await changeStatus("brisa-people", null, form({ status: "published" }));
     expect(result).toEqual({ ok: false, message: "Please fix the highlighted problems.", errors: [{ path: "status", message: "Add a summary" }] });
@@ -146,5 +149,70 @@ describe("protected actions", () => {
     cookieJar.set("gw_admin", { value: TOKEN });
     expect(await changeStatus("brisa-people", null, form({ status: "deleted" }))).toEqual({ ok: false, message: "Unknown status." });
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("two-factor login", () => {
+  it("after a correct password, stores only the challenge (scoped to the login pages) and asks for the code", async () => {
+    fetchMock.mockResolvedValue(json({ data: { twoFactorRequired: true, challengeToken: TOKEN, expiresAt: "2026-10-19T12:05:00Z" } }, 202));
+    const error = await login(null, form({ email: "admin@example.com", password: "a long password" })).catch((e) => e);
+    expect(error.url).toBe("/admin/login/verify");
+    expect(cookieJar.has("gw_admin")).toBe(false);
+    expect(cookieJar.get("gw_admin_challenge")?.options).toMatchObject({ httpOnly: true, sameSite: "strict", path: "/admin/login" });
+  });
+
+  it("sends the code with the challenge, then swaps the challenge for a session", async () => {
+    cookieJar.set("gw_admin_challenge", { value: TOKEN });
+    fetchMock.mockResolvedValue(json({ data: { token: "b".repeat(43), expiresAt: "2026-10-19T20:00:00Z" } }, 201));
+    const error = await verifyCode(null, form({ method: "totp", code: "123 456" })).catch((e) => e);
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ challengeToken: TOKEN, code: "123456" });
+    expect(error.url).toBe("/admin");
+    expect(cookieJar.get("gw_admin")?.value).toBe("b".repeat(43));
+    expect(cookieJar.has("gw_admin_challenge")).toBe(false);
+  });
+
+  it("sends recovery codes as recovery codes", async () => {
+    cookieJar.set("gw_admin_challenge", { value: TOKEN });
+    fetchMock.mockResolvedValue(json({ error: { code: "invalid_code" } }, 401));
+    const result = await verifyCode(null, form({ method: "recovery", code: "abcde-fghij" }));
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ challengeToken: TOKEN, recoveryCode: "abcde-fghij" });
+    expect(result).toMatchObject({ ok: false, message: expect.stringContaining("didn't work") });
+    expect(cookieJar.has("gw_admin")).toBe(false);
+  });
+
+  it("refuses malformed codes without calling the API", async () => {
+    cookieJar.set("gw_admin_challenge", { value: TOKEN });
+    for (const code of ["12345", "abcdef", "1234567", "<script>"]) {
+      expect((await verifyCode(null, form({ method: "totp", code }))).ok).toBe(false);
+    }
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("without a challenge, goes back to the password step", async () => {
+    const error = await verifyCode(null, form({ method: "totp", code: "123456" })).catch((e) => e);
+    expect(error.url).toBe("/admin/login?expired=1");
+  });
+});
+
+describe("two-factor setup", () => {
+  it("sends admins without two-factor to set it up before any admin write", async () => {
+    cookieJar.set("gw_admin", { value: TOKEN });
+    fetchMock.mockResolvedValueOnce(json({ data: { user: { twoFactorEnabled: false } } }));
+    const error = await saveReport("brisa-people", {}).catch((e) => e);
+    expect(error.url).toBe("/admin/two-factor");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("only accepts an SVG data: URI as the QR image", async () => {
+    cookieJar.set("gw_admin", { value: TOKEN });
+    fetchMock
+      .mockResolvedValueOnce(json({ data: { user: { twoFactorEnabled: false } } }))
+      .mockResolvedValueOnce(json({ data: { qrCodeDataUri: "javascript:alert(1)", secret: "JBSWY3DPEHPK3PXP" } }));
+    expect(await startTwoFactorSetup()).toMatchObject({ ok: false });
+
+    fetchMock
+      .mockResolvedValueOnce(json({ data: { user: { twoFactorEnabled: false } } }))
+      .mockResolvedValueOnce(json({ data: { qrCodeDataUri: "data:image/svg+xml;base64,PHN2Zz4=", secret: "JBSWY3DPEHPK3PXP" } }));
+    expect(await startTwoFactorSetup()).toEqual({ ok: true, qrCodeDataUri: "data:image/svg+xml;base64,PHN2Zz4=", secret: "JBSWY3DPEHPK3PXP" });
   });
 });

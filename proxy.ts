@@ -8,7 +8,7 @@ const COOKIES = ["__Host-gw_admin", "gw_admin"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  if (pathname === "/admin/login") return NextResponse.next();
+  if (pathname === "/admin/login" || pathname.startsWith("/admin/login/")) return NextResponse.next();
 
   const hasSession = COOKIES.some((name) => request.cookies.has(name));
   if (hasSession) return NextResponse.next();

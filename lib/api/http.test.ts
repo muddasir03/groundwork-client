@@ -20,7 +20,7 @@ describe("apiGet", () => {
   it("calls /api/v1 on the configured base URL and parses JSON", async () => {
     fetchMock.mockResolvedValue(json({ data: [1] }));
     expect(await apiGet("/companies")).toEqual({ data: [1] });
-    expect(fetchMock).toHaveBeenCalledWith("https://api.example.test/api/v1/companies", expect.objectContaining({ headers: { Accept: "application/json" } }));
+    expect(fetchMock).toHaveBeenCalledWith("https://api.example.test/api/v1/companies", expect.objectContaining({ method: "GET", headers: { Accept: "application/json" } }));
   });
 
   it("returns null for 404 (missing or unpublished)", async () => {

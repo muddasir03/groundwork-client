@@ -12,7 +12,7 @@ import { StatTile } from "@/components/ui/StatTile";
 import { Table, TableFrame, Td, Th } from "@/components/ui/Table";
 import { Tabs } from "@/components/ui/Tabs";
 import { Eyebrow } from "@/components/ui/Eyebrow";
-import { SelectField, TextField } from "@/components/ui/Field";
+import { SelectField, TextAreaField, TextField } from "@/components/ui/Field";
 import { FitBadge } from "@/components/ui/FitBadge";
 import { FitReasons } from "@/components/ui/FitReasons";
 import { FitScoreRing } from "@/components/ui/FitScoreRing";
@@ -263,7 +263,7 @@ export default function DesignSystemPage() {
             </Card>
             <Card highlight="primary">
               <div className="grid gap-4 sm:grid-cols-2">
-                <TextField label="GitHub" placeholder="github.com/username" />
+                <TextField label="GitHub" placeholder="github.com/username" hint="Optional helper text sits under the field." />
                 <SelectField
                   label="Country"
                   options={[
@@ -272,6 +272,8 @@ export default function DesignSystemPage() {
                   ]}
                 />
               </div>
+              <TextAreaField className="mt-4" label="Summary" placeholder="Two or three sentences…" />
+              <TextField className="mt-4" label="Disabled" value="Not editable" disabled readOnly />
               <ResearchMeta className="mt-4" variant="highlight" researchedAt="2026-09-30" sourceCount={18} />
             </Card>
           </div>

@@ -17,10 +17,8 @@ export const appNavItems: NavItem[] = [
 
 /** Sections of the internal admin area. */
 export const adminNavItems: NavItem[] = [
+  // Contacts, Verdict feedback and AI usage (from the designs) are added when those features exist.
   { href: "/admin", label: "Companies" },
-  { href: "/admin/contacts", label: "Contacts" },
-  { href: "/admin/verdict-feedback", label: "Verdict feedback" },
-  { href: "/admin/ai-usage", label: "AI usage" },
 ];
 
 /**

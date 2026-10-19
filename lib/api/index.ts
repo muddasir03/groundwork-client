@@ -7,8 +7,6 @@
 import { byFit, personalize, withFitSummary } from "@/lib/api/personal";
 import { fetchCompanies, fetchCompany } from "@/lib/api/remote";
 import {
-  sampleAdminCompanies,
-  sampleAdminStats,
   sampleCompanies,
   sampleCountryOptions,
   sampleProfile,
@@ -16,8 +14,6 @@ import {
   sampleShortlist,
 } from "@/lib/api/sampleData";
 import type {
-  AdminCompanyRow,
-  AdminStats,
   Company,
   CompanyComparison,
   CompanySummary,
@@ -93,14 +89,6 @@ export async function getProfileOptions(): Promise<{ countries: string[]; sector
 /** The shortlist a visitor starts with. Saved changes live in the browser until accounts exist. */
 export async function getInitialShortlist(): Promise<ShortlistEntry[]> {
   return sampleShortlist;
-}
-
-export async function listAdminCompanies(): Promise<AdminCompanyRow[]> {
-  return sampleAdminCompanies;
-}
-
-export async function getAdminStats(): Promise<AdminStats> {
-  return sampleAdminStats;
 }
 
 /** The fictional company used for the landing page preview and the public sample report.

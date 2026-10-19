@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // cacheLife only works inside Next's "use cache" runtime; outside it, the directive is a plain string.
-vi.mock("next/cache", () => ({ cacheLife: () => undefined }));
+vi.mock("next/cache", () => ({ cacheLife: () => undefined, cacheTag: () => undefined }));
 
 const { fetchCompany } = await import("@/lib/api/remote");
 

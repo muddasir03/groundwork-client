@@ -101,7 +101,7 @@ Fonts load through `next/font` in `app/layout.tsx` (self-hosted, no requests to 
 | `Table`, `TableFrame`, `Th`, `Td` | `ui/Table.tsx` | Tables (shortlist, compare, admin); `Th scope="row"` for row labels, `Td last` on the final row |
 | `EmptyState` | `ui/EmptyState.tsx` | Empty lists: what's missing and the next step |
 | `CompanyMark`, `Avatar` | `ui/Identity.tsx` | Company letter tile; person initials (`soft`) or the signed-in user (`ink`) |
-| `TextField`, `SelectField` | `ui/Field.tsx` | Labelled inputs and filter dropdowns |
+| `TextField`, `TextAreaField`, `SelectField` | `ui/Field.tsx` | Labelled inputs, multi-line text and dropdowns; `hint` adds helper text (linked with `aria-describedby`) |
 | icons | `ui/icons.tsx` | Small inline icon set; always paired with text or an `aria-label` |
 | `AppShell` | `layout/AppShell.tsx` | Signed-in frame: top nav on desktop, bottom tab bar on mobile |
 | `PublicShell` | `layout/PublicShell.tsx` | Public frame (landing, log in, sample report): header with "Get started", footer with the privacy line. Call-to-action targets live in `publicLinks` |

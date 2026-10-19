@@ -10,9 +10,10 @@ describe("activeNavHref", () => {
   });
 
   it("prefers the most specific section", () => {
-    expect(activeNavHref("/admin", adminNavItems)).toBe("/admin");
-    expect(activeNavHref("/admin/contacts", adminNavItems)).toBe("/admin/contacts");
-    expect(activeNavHref("/admin/companies/brisa-people", adminNavItems)).toBe("/admin");
+    const items = [...adminNavItems, { href: "/admin/contacts", label: "Contacts" }];
+    expect(activeNavHref("/admin", items)).toBe("/admin");
+    expect(activeNavHref("/admin/contacts", items)).toBe("/admin/contacts");
+    expect(activeNavHref("/admin/companies/brisa-people", items)).toBe("/admin");
   });
 
   it("matches nothing outside the app sections", () => {

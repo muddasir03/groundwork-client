@@ -10,7 +10,14 @@ import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { LOGIN_PATH, adminWrite } from "@/lib/admin/dal";
 import { sanitizeReportPayload } from "@/lib/admin/reportPayload";
-import { clearAdminSession, readAdminToken, writeAdminSession } from "@/lib/admin/session";
+import {
+  clearAdminSession,
+  clearLoginChallenge,
+  readAdminToken,
+  readLoginChallenge,
+  writeAdminSession,
+  writeLoginChallenge,
+} from "@/lib/admin/session";
 import type { ActionResult, AdminCompany } from "@/lib/admin/types";
 import { ApiError, apiFetch, segment } from "@/lib/api/http";
 import { COMPANIES_TAG, SLUG } from "@/lib/api/remote";
@@ -42,9 +49,53 @@ export async function login(_previous: ActionResult | null, form: FormData): Pro
   }
 
   if (response.status === 429) return { ok: false, message: "Too many login attempts. Wait a few minutes and try again." };
+
+  // Two-factor on: the password only earned a short-lived challenge. Keep it in its own HttpOnly
+  // cookie (scoped to the login pages) and ask for the code.
+  if (response.status === 202) {
+    const { data } = (await response.json()) as { data: { challengeToken: string; expiresAt: string } };
+    await writeLoginChallenge(data.challengeToken, new Date(data.expiresAt));
+    redirect(VERIFY_PATH);
+  }
   if (response.status !== 201) return { ok: false, message: "That email and password don't match an admin account." };
 
+  // Two-factor not set up yet: this session can only set it up (the API enforces that).
   const { data } = (await response.json()) as { data: { token: string; expiresAt: string } };
+  await writeAdminSession(data.token, new Date(data.expiresAt));
+  redirect("/admin");
+}
+
+const VERIFY_PATH = "/admin/login/verify";
+
+/** Second login step: the challenge (from its cookie) plus an authenticator or recovery code. */
+export async function verifyCode(_previous: ActionResult | null, form: FormData): Promise<ActionResult> {
+  const challengeToken = await readLoginChallenge();
+  if (!challengeToken) redirect(`${LOGIN_PATH}?expired=1`);
+
+  const useRecovery = form.get("method") === "recovery";
+  const code = field(form, "code", 40).replace(/\s/g, "");
+  if (useRecovery ? !/^[A-Za-z2-7-]{10,11}$/.test(code) : !/^\d{6}$/.test(code)) {
+    return { ok: false, message: useRecovery ? "Enter one of your recovery codes, like abcde-fghij." : "Enter the 6-digit code from your authenticator app." };
+  }
+
+  let response: Response;
+  try {
+    response = await apiFetch("/admin/session/verify", {
+      method: "POST",
+      body: useRecovery ? { challengeToken, recoveryCode: code } : { challengeToken, code },
+    });
+  } catch (error) {
+    if (error instanceof ApiError) return { ok: false, message: "The server isn't responding. Try again in a minute." };
+    throw error;
+  }
+
+  if (response.status === 429) return { ok: false, message: "Too many attempts. Wait a minute and try again." };
+  if (response.status !== 201) {
+    return { ok: false, message: "That code didn't work. Check it and try again. After several wrong codes you'll need to log in again." };
+  }
+
+  const { data } = (await response.json()) as { data: { token: string; expiresAt: string } };
+  await clearLoginChallenge();
   await writeAdminSession(data.token, new Date(data.expiresAt));
   redirect("/admin");
 }
@@ -110,4 +161,41 @@ export async function changeStatus(slug: string, _previous: ActionResult | null,
   if (!result.ok) return { ok: false, message: result.message, errors: result.errors };
   updateTag(COMPANIES_TAG);
   return { ok: true, message: "Status updated." };
+}
+
+// ── Two-factor setup ────────────────────────────────────────────────────────────────────────────
+
+export type TwoFactorSetup = { ok: true; qrCodeDataUri: string; secret: string } | { ok: false; message: string };
+
+/** Starts setup: a new secret and its QR code, for the signed-in admin only. */
+export async function startTwoFactorSetup(): Promise<TwoFactorSetup> {
+  const result = await adminWrite<{ qrCodeDataUri: string; secret: string }>("POST", "/admin/two_factor/setup", {}, { allowWithoutTwoFactor: true });
+  if (!result.ok) return { ok: false, message: result.message };
+  // Only ever render an SVG data: URI as the QR image.
+  if (!result.data.qrCodeDataUri.startsWith("data:image/svg+xml;base64,") || !/^[A-Z2-7]{16,64}$/.test(result.data.secret)) {
+    return { ok: false, message: "The setup data looked wrong. Reload and try again." };
+  }
+  return { ok: true, qrCodeDataUri: result.data.qrCodeDataUri, secret: result.data.secret };
+}
+
+export type RecoveryCodesResult = { ok: true; recoveryCodes: string[] } | { ok: false; message: string };
+
+/** Finishes setup with the first code from the app. Returns the recovery codes (shown once). */
+export async function confirmTwoFactor(code: string): Promise<RecoveryCodesResult> {
+  const clean = String(code).replace(/\s/g, "");
+  if (!/^\d{6}$/.test(clean)) return { ok: false, message: "Enter the 6-digit code from your authenticator app." };
+
+  const result = await adminWrite<{ recoveryCodes: string[] }>("POST", "/admin/two_factor/confirm", { code: clean }, { allowWithoutTwoFactor: true });
+  if (!result.ok) return { ok: false, message: result.message };
+  return { ok: true, recoveryCodes: result.data.recoveryCodes };
+}
+
+/** Replaces the recovery codes; needs a current code from the app. */
+export async function regenerateRecoveryCodes(code: string): Promise<RecoveryCodesResult> {
+  const clean = String(code).replace(/\s/g, "");
+  if (!/^\d{6}$/.test(clean)) return { ok: false, message: "Enter the 6-digit code from your authenticator app." };
+
+  const result = await adminWrite<{ recoveryCodes: string[] }>("POST", "/admin/two_factor/recovery_codes", { code: clean });
+  if (!result.ok) return { ok: false, message: result.message };
+  return { ok: true, recoveryCodes: result.data.recoveryCodes };
 }

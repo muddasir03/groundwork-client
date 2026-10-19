@@ -19,6 +19,7 @@ export const appNavItems: NavItem[] = [
 export const adminNavItems: NavItem[] = [
   // Contacts, Verdict feedback and AI usage (from the designs) are added when those features exist.
   { href: "/admin", label: "Companies" },
+  { href: "/admin/two-factor", label: "Security" },
 ];
 
 /**

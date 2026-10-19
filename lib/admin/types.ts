@@ -2,7 +2,9 @@
 
 import type { AdminCompanyRow, AdminStats, ApiCompany } from "@/lib/api/types";
 
-export type AdminUser = { id: string; emailAddress: string; role: "admin" };
+export type AdminUser = { id: string; emailAddress: string; role: "admin"; twoFactorEnabled: boolean };
+
+export type TwoFactorStatus = { enabled: boolean; enabledAt: string | null; remainingRecoveryCodes: number | null };
 
 export type AdminCompany = ApiCompany & {
   status: AdminCompanyRow["status"];

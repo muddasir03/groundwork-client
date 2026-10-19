@@ -4,13 +4,14 @@ import { cache } from "react";
 import { apiFetch, segment } from "@/lib/api/http";
 import { SLUG } from "@/lib/api/remote";
 import { readAdminToken } from "@/lib/admin/session";
-import type { AdminCompany, AdminCompanyList, AdminUser, FieldError } from "@/lib/admin/types";
+import type { AdminCompany, AdminCompanyList, AdminUser, FieldError, TwoFactorStatus } from "@/lib/admin/types";
 
 // The admin Data Access Layer: the only code that talks to /api/v1/admin. Every read starts with
 // verifyAdmin(), so no admin page or server action can fetch admin data without a valid session.
 // The API checks the session again on every request; this layer is a second, independent guard.
 
 export const LOGIN_PATH = "/admin/login";
+export const TWO_FACTOR_PATH = "/admin/two-factor";
 
 /**
  * The signed-in admin, checked with the API (not just "a cookie exists"). Redirects to the login
@@ -29,8 +30,18 @@ export const verifyAdmin = cache(async (): Promise<{ user: AdminUser; token: str
   return { user: data.user, token };
 });
 
+/**
+ * verifyAdmin, plus two-factor: an admin who hasn't set it up is sent to the setup page. Every
+ * admin data read and write uses this. (The API enforces it too.)
+ */
+export async function requireAdmin(): Promise<{ user: AdminUser; token: string }> {
+  const admin = await verifyAdmin();
+  if (!admin.user.twoFactorEnabled) redirect(TWO_FACTOR_PATH);
+  return admin;
+}
+
 export async function getAdminCompanies(): Promise<AdminCompanyList> {
-  const { token } = await verifyAdmin();
+  const { token } = await requireAdmin();
   const response = await apiFetch("/admin/companies", { token });
   if (!response.ok) throw new Error(`Couldn't load companies (${response.status})`);
   return (await response.json()) as AdminCompanyList;
@@ -38,7 +49,7 @@ export async function getAdminCompanies(): Promise<AdminCompanyList> {
 
 /** A company in any status, or null if it doesn't exist. */
 export async function getAdminCompany(slug: string): Promise<AdminCompany | null> {
-  const { token } = await verifyAdmin();
+  const { token } = await requireAdmin();
   if (!SLUG.test(slug)) return null;
   const response = await apiFetch(`/admin/companies/${segment(slug)}`, { token });
   if (response.status === 404) return null;
@@ -46,15 +57,26 @@ export async function getAdminCompany(slug: string): Promise<AdminCompany | null
   return ((await response.json()) as { data: AdminCompany }).data;
 }
 
+export async function getTwoFactorStatus(): Promise<TwoFactorStatus> {
+  const { token } = await verifyAdmin();
+  const response = await apiFetch("/admin/two_factor", { token });
+  if (!response.ok) throw new Error(`Couldn't load two-factor status (${response.status})`);
+  return ((await response.json()) as { data: TwoFactorStatus }).data;
+}
+
 type WriteResult<T> = { ok: true; data: T } | { ok: false; status: number; message: string; errors: FieldError[] };
 
-/** Sends an admin write and normalises the API's answer, including its validation errors. */
-export async function adminWrite<T>(method: "POST" | "PATCH" | "PUT", path: string, body: unknown): Promise<WriteResult<T>> {
-  const { token } = await verifyAdmin();
+/**
+ * Sends an admin write and normalises the API's answer, including its validation errors.
+ * `allowWithoutTwoFactor` is only for the two-factor setup calls themselves.
+ */
+export async function adminWrite<T>(method: "POST" | "PATCH" | "PUT", path: string, body: unknown, { allowWithoutTwoFactor = false } = {}): Promise<WriteResult<T>> {
+  const { token } = allowWithoutTwoFactor ? await verifyAdmin() : await requireAdmin();
   const response = await apiFetch(path, { method, body, token });
   if (response.ok) return { ok: true, data: ((await response.json()) as { data: T }).data };
-  if (response.status === 401 || response.status === 403) redirect(`${LOGIN_PATH}?expired=1`);
+  if (response.status === 401) redirect(`${LOGIN_PATH}?expired=1`);
 
-  const error = ((await response.json().catch(() => ({}))) as { error?: { message?: string; details?: FieldError[] } }).error;
+  const error = ((await response.json().catch(() => ({}))) as { error?: { code?: string; message?: string; details?: FieldError[] } }).error;
+  if (response.status === 403) redirect(error?.code === "two_factor_setup_required" ? TWO_FACTOR_PATH : `${LOGIN_PATH}?expired=1`);
   return { ok: false, status: response.status, message: error?.message ?? `Something went wrong (${response.status}).`, errors: error?.details ?? [] };
 }

@@ -104,6 +104,13 @@ data-fetching, caching or routing code.
   validates its own input and re-verifies the session (via `adminWrite`/`verifyAdmin`); never rely
   on the page having checked. Never return the token. Actions that change research call
   `updateTag(COMPANIES_TAG)` so public pages refresh immediately.
+- **Admins log in with password + two-factor code.** The password step leaves only a short-lived
+  challenge in its own HttpOnly cookie (scoped to `/admin/login`); `/admin/login/verify` exchanges
+  it plus a code for the session. Admin data reads and writes use `requireAdmin()` (session **and**
+  two-factor); only the setup page and its actions use `verifyAdmin()` alone. Admins without
+  two-factor are sent to `/admin/two-factor`.
+- Delete `__Host-`/`__Secure-` cookies by overwriting them expired **with the same flags**
+  (`clearAdminSession`): browsers ignore a deletion without `Secure`.
 - `app/admin/(console)/` — admin pages (wrapped in `AdminShell`). Layouts never do auth checks
   (they don't re-run on navigation); pages call the DAL. `proxy.ts` only redirects visitors
   without a cookie to `/admin/login` as a convenience; it is not a security boundary.

@@ -29,7 +29,30 @@ export async function writeAdminSession(token: string, expiresAt: Date) {
   (await cookies()).set(ADMIN_COOKIE, token, adminCookieOptions(expiresAt));
 }
 
-/** Server actions and route handlers only. */
+/**
+ * Server actions and route handlers only. Deletes by overwriting with an expired cookie carrying the
+ * same flags: browsers ignore a deletion of a __Host-/__Secure- cookie that lacks `Secure`.
+ */
 export async function clearAdminSession() {
-  (await cookies()).delete(ADMIN_COOKIE);
+  (await cookies()).set(ADMIN_COOKIE, "", { ...adminCookieOptions(new Date(0)), maxAge: 0 });
+}
+
+// The two-factor login challenge, between the password step and the code step. Same protections,
+// shorter life (the API expires it after 5 minutes), and only sent to the login pages.
+export const CHALLENGE_COOKIE = PRODUCTION ? "__Secure-gw_admin_challenge" : "gw_admin_challenge";
+const TOKEN_FORMAT = /^[A-Za-z0-9_-]{20,100}$/;
+
+const challengeCookieOptions = (expiresAt: Date) => ({ httpOnly: true, secure: PRODUCTION, sameSite: "strict" as const, path: "/admin/login", expires: expiresAt });
+
+export async function writeLoginChallenge(token: string, expiresAt: Date) {
+  (await cookies()).set(CHALLENGE_COOKIE, token, challengeCookieOptions(expiresAt));
+}
+
+export async function readLoginChallenge(): Promise<string | undefined> {
+  const value = (await cookies()).get(CHALLENGE_COOKIE)?.value;
+  return value && TOKEN_FORMAT.test(value) ? value : undefined;
+}
+
+export async function clearLoginChallenge() {
+  (await cookies()).set(CHALLENGE_COOKIE, "", { ...challengeCookieOptions(new Date(0)), maxAge: 0 });
 }
